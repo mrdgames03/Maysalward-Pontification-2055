@@ -7,8 +7,9 @@ import AddTrainingCourseModal from '../components/AddTrainingCourseModal';
 import TrainingCourseCard from '../components/TrainingCourseCard';
 import AddAttendeesModal from '../components/AddAttendeesModal';
 import ViewAttendeesModal from '../components/ViewAttendeesModal';
+import CategoryLocationModal from '../components/CategoryLocationModal';
 
-const { FiBook, FiPlus, FiSearch, FiFilter, FiCalendar, FiUsers } = FiIcons;
+const { FiBook, FiPlus, FiSearch, FiFilter, FiCalendar, FiUsers, FiSettings, FiTag, FiMapPin } = FiIcons;
 
 const TrainingCourses = () => {
   const {
@@ -19,36 +20,34 @@ const TrainingCourses = () => {
     addAttendeesToCourse,
     removeAttendeeFromCourse,
     markCourseAttendeeComplete,
-    updateTrainee
+    updateTrainee,
+    courseCategories
   } = useTrainee();
 
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [showViewAttendeesModal, setShowViewAttendeesModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [editingCourse, setEditingCourse] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  const categories = [
-    'General', 'Programming', 'Web Development', 'Mobile Development',
-    'Design', 'UI/UX', 'Marketing', 'Digital Marketing', 'Management',
-    'Leadership', 'Technical Skills', 'Soft Skills', 'Communication',
-    'Language', 'Certification', 'Security', 'Data Science', 'AI/ML'
-  ];
-
   // Filter courses
   const filteredCourses = trainingCourses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = 
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.category.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesCategory = filterCategory === 'all' || course.category === filterCategory;
-    
+
     const now = new Date();
     const startDate = new Date(`${course.startDate}T${course.startTime}`);
     const endDate = new Date(`${course.endDate}T${course.endTime}`);
-    
+
     let matchesStatus = true;
     if (filterStatus === 'upcoming') {
       matchesStatus = startDate > now;
@@ -59,7 +58,7 @@ const TrainingCourses = () => {
     } else if (filterStatus === 'past') {
       matchesStatus = endDate < now && course.status !== 'completed';
     }
-    
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -68,8 +67,17 @@ const TrainingCourses = () => {
   };
 
   const handleEditCourse = (course) => {
-    console.log('Edit course:', course);
-    // TODO: Implement edit functionality
+    setEditingCourse(course);
+    setShowCourseModal(true);
+  };
+
+  const handleUpdateCourse = (courseData) => {
+    if (editingCourse) {
+      updateTrainingCourse(editingCourse.id, courseData);
+      setEditingCourse(null);
+    } else {
+      addTrainingCourse(courseData);
+    }
   };
 
   const handleDeleteCourse = (courseId) => {
@@ -107,6 +115,11 @@ const TrainingCourses = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setShowCourseModal(false);
+    setEditingCourse(null);
+  };
+
   const stats = {
     total: trainingCourses.length,
     upcoming: trainingCourses.filter(c => {
@@ -130,15 +143,40 @@ const TrainingCourses = () => {
           <h1 className="text-3xl font-bold text-gray-900">Training Courses</h1>
           <p className="text-gray-600">Create and manage group training courses</p>
         </div>
-        <motion.button
-          onClick={() => setShowCourseModal(true)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-        >
-          <SafeIcon icon={FiPlus} />
-          <span>Create Course</span>
-        </motion.button>
+        <div className="flex gap-2">
+          {/* Admin Settings */}
+          <motion.button
+            onClick={() => setShowCategoryModal(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
+            title="Manage Categories"
+          >
+            <SafeIcon icon={FiTag} />
+            <span>Categories</span>
+          </motion.button>
+
+          <motion.button
+            onClick={() => setShowLocationModal(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
+            title="Manage Locations"
+          >
+            <SafeIcon icon={FiMapPin} />
+            <span>Locations</span>
+          </motion.button>
+
+          <motion.button
+            onClick={() => setShowCourseModal(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+          >
+            <SafeIcon icon={FiPlus} />
+            <span>Create Course</span>
+          </motion.button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -152,6 +190,7 @@ const TrainingCourses = () => {
             </div>
           </div>
         </div>
+
         <div className="bg-yellow-50 rounded-lg p-4">
           <div className="flex items-center space-x-3">
             <SafeIcon icon={FiCalendar} className="text-yellow-600 text-xl" />
@@ -161,6 +200,7 @@ const TrainingCourses = () => {
             </div>
           </div>
         </div>
+
         <div className="bg-green-50 rounded-lg p-4">
           <div className="flex items-center space-x-3">
             <SafeIcon icon={FiUsers} className="text-green-600 text-xl" />
@@ -170,6 +210,7 @@ const TrainingCourses = () => {
             </div>
           </div>
         </div>
+
         <div className="bg-purple-50 rounded-lg p-4">
           <div className="flex items-center space-x-3">
             <SafeIcon icon={FiBook} className="text-purple-600 text-xl" />
@@ -205,7 +246,7 @@ const TrainingCourses = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
             >
               <option value="all">All Categories</option>
-              {categories.map(category => (
+              {courseCategories.map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
@@ -252,8 +293,7 @@ const TrainingCourses = () => {
             <p className="text-gray-600 mb-6">
               {searchTerm || filterCategory !== 'all' || filterStatus !== 'all'
                 ? 'No courses match your current filters'
-                : 'Get started by creating your first training course'
-              }
+                : 'Get started by creating your first training course'}
             </p>
             {!searchTerm && filterCategory === 'all' && filterStatus === 'all' && (
               <motion.button
@@ -273,8 +313,9 @@ const TrainingCourses = () => {
       {/* Modals */}
       <AddTrainingCourseModal
         isOpen={showCourseModal}
-        onClose={() => setShowCourseModal(false)}
-        onSave={handleAddCourse}
+        onClose={handleCloseModal}
+        onSave={handleUpdateCourse}
+        courseToEdit={editingCourse}
       />
 
       <AddAttendeesModal
@@ -296,6 +337,18 @@ const TrainingCourses = () => {
         course={selectedCourse}
         onRemoveAttendee={handleRemoveAttendee}
         onMarkComplete={handleMarkAttendeeComplete}
+      />
+
+      <CategoryLocationModal
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        type="category"
+      />
+
+      <CategoryLocationModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        type="location"
       />
     </div>
   );

@@ -1,9 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import QrScanner from 'qr-scanner';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useTrainee } from '../context/TraineeContext';
+
+// Dynamically import QR Scanner to avoid SSR issues
+let QrScanner = null;
+if (typeof window !== 'undefined') {
+  import('qr-scanner').then(module => {
+    QrScanner = module.default;
+  });
+}
 
 const { FiX, FiUserPlus, FiUsers, FiSearch, FiCheck, FiCamera, FiCameraOff, FiCheckCircle, FiAlertCircle } = FiIcons;
 
@@ -11,7 +18,7 @@ const AddAttendeesModal = ({ isOpen, onClose, course, onAddAttendees }) => {
   const { trainees } = useTrainee();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrainees, setSelectedTrainees] = useState([]);
-  const [activeTab, setActiveTab] = useState('search'); // 'search' or 'scan'
+  const [activeTab, setActiveTab] = useState('search');
   
   // QR Scanner states
   const videoRef = useRef(null);
@@ -20,6 +27,27 @@ const AddAttendeesModal = ({ isOpen, onClose, course, onAddAttendees }) => {
   const [scanResult, setScanResult] = useState(null);
   const [scanError, setScanError] = useState('');
   const [hasCamera, setHasCamera] = useState(true);
+  const [qrScannerLoaded, setQrScannerLoaded] = useState(false);
+
+  // Load QR Scanner dynamically
+  useEffect(() => {
+    const loadQrScanner = async () => {
+      try {
+        if (typeof window !== 'undefined' && !QrScanner) {
+          const module = await import('qr-scanner');
+          QrScanner = module.default;
+          setQrScannerLoaded(true);
+        } else if (QrScanner) {
+          setQrScannerLoaded(true);
+        }
+      } catch (error) {
+        console.error('Failed to load QR Scanner:', error);
+        setScanError('QR Scanner not available');
+      }
+    };
+
+    loadQrScanner();
+  }, []);
 
   // Clean up scanner on unmount or modal close
   useEffect(() => {
@@ -63,6 +91,11 @@ const AddAttendeesModal = ({ isOpen, onClose, course, onAddAttendees }) => {
   // QR Scanner functions
   const startScanner = async () => {
     try {
+      if (!QrScanner || !qrScannerLoaded) {
+        setScanError('QR Scanner not loaded yet. Please try again.');
+        return;
+      }
+
       setScanError('');
       setScanResult(null);
 
@@ -383,13 +416,13 @@ const AddAttendeesModal = ({ isOpen, onClose, course, onAddAttendees }) => {
                     {!isScanning ? (
                       <motion.button
                         onClick={startScanner}
-                        disabled={!hasCamera}
+                        disabled={!hasCamera || !qrScannerLoaded}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
                       >
                         <SafeIcon icon={FiCamera} />
-                        <span>Start Scanner</span>
+                        <span>{qrScannerLoaded ? 'Start Scanner' : 'Loading Scanner...'}</span>
                       </motion.button>
                     ) : (
                       <motion.button
@@ -465,7 +498,7 @@ const AddAttendeesModal = ({ isOpen, onClose, course, onAddAttendees }) => {
                                 >
                                   Scan Another
                                 </button>
-                                {!isScanning && hasCamera && (
+                                {!isScanning && hasCamera && qrScannerLoaded && (
                                   <button
                                     onClick={startScanner}
                                     className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"

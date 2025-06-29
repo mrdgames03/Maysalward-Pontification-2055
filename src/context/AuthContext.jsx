@@ -13,10 +13,9 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // 🔑 LOGIN PASSWORD CONFIGURATION
   const CORRECT_PASSWORD = '1234'; // ✅ Password is set to "1234"
-  
   const AUTH_KEY = 'maysalward_auth';
   const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 

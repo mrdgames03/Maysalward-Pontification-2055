@@ -10,8 +10,9 @@ import AddTrainingModal from '../components/AddTrainingModal';
 import AddCourseModal from '../components/AddCourseModal';
 import TrainingSessionCard from '../components/TrainingSessionCard';
 import CourseCard from '../components/CourseCard';
+import DeleteTraineeModal from '../components/DeleteTraineeModal';
 
-const { FiArrowLeft, FiFlag, FiStar, FiActivity, FiCalendar, FiUser, FiMail, FiPhone, FiBook, FiPlus, FiAward } = FiIcons;
+const { FiArrowLeft, FiFlag, FiStar, FiActivity, FiCalendar, FiUser, FiMail, FiPhone, FiBook, FiPlus, FiAward, FiTrash } = FiIcons;
 
 const TraineeDetails = () => {
   const { id } = useParams();
@@ -20,6 +21,7 @@ const TraineeDetails = () => {
     getTraineeById,
     getTraineeCheckIns,
     flagTrainee,
+    deleteTrainee,
     addTrainingSession,
     getTraineeTrainingSessions,
     markSessionComplete,
@@ -33,6 +35,7 @@ const TraineeDetails = () => {
   } = useTrainee();
 
   const [showFlagModal, setShowFlagModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [flagReason, setFlagReason] = useState('');
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [showCourseModal, setShowCourseModal] = useState(false);
@@ -65,6 +68,11 @@ const TraineeDetails = () => {
     flagTrainee(id, flagReason);
     setShowFlagModal(false);
     setFlagReason('');
+  };
+
+  const handleDeleteTrainee = (traineeId) => {
+    deleteTrainee(traineeId);
+    navigate('/trainees'); // Redirect to trainees list after deletion
   };
 
   const handleAddTraining = (trainingData) => {
@@ -145,10 +153,17 @@ const TraineeDetails = () => {
           </button>
           <button
             onClick={() => setShowFlagModal(true)}
-            className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-2"
+            className="bg-yellow-100 text-yellow-600 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors flex items-center space-x-2"
           >
             <SafeIcon icon={FiFlag} />
-            <span>Flag Trainee</span>
+            <span>Flag</span>
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-2"
+          >
+            <SafeIcon icon={FiTrash} />
+            <span>Delete</span>
           </button>
         </div>
       </div>
@@ -195,7 +210,10 @@ const TraineeDetails = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Info */}
               <div className="lg:col-span-2 space-y-6">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
                   <TraineeCard trainee={trainee} showActions={true} />
                 </motion.div>
               </div>
@@ -528,6 +546,14 @@ const TraineeDetails = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Delete Trainee Modal */}
+      <DeleteTraineeModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        trainee={trainee}
+        onConfirmDelete={handleDeleteTrainee}
+      />
     </div>
   );
 };

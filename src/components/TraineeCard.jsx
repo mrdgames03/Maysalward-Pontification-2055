@@ -47,14 +47,14 @@ const TraineeCard = ({ trainee, showActions = false }) => {
         backgroundColor: '#ffffff',
         useCORS: true
       });
-      
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: [85.6, 53.98] // Credit card size
       });
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, 85.6, 53.98);
       pdf.save(`${trainee.name}-trainee-card.pdf`);
     } catch (error) {
@@ -79,7 +79,7 @@ Please keep your trainee card safe and present it during check-ins.
 Best regards,
 Maysalward Training Hub Team
     `;
-    
+
     const mailtoUrl = `mailto:${trainee.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl);
   };
@@ -106,9 +106,9 @@ Maysalward Training Hub Team
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center p-2">
-                <img 
-                  src="/logo.png" 
-                  alt="Maysalward Logo" 
+                <img
+                  src="/logo.png"
+                  alt="Maysalward Logo"
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -122,6 +122,17 @@ Maysalward Training Hub Team
                 <p className="text-blue-100 text-sm">Maysalward Training Hub</p>
               </div>
             </div>
+            
+            {/* Profile Photo */}
+            {trainee.photo && (
+              <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/20 border-2 border-white/30">
+                <img
+                  src={trainee.photo}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
           </div>
 
           {/* Main Content */}
@@ -147,11 +158,7 @@ Maysalward Training Hub Team
             <div className="ml-4">
               {qrCodeUrl && (
                 <div className="bg-white p-2 rounded-lg">
-                  <img 
-                    src={qrCodeUrl} 
-                    alt="QR Code" 
-                    className="w-16 h-16"
-                  />
+                  <img src={qrCodeUrl} alt="QR Code" className="w-16 h-16" />
                 </div>
               )}
             </div>
@@ -163,6 +170,23 @@ Maysalward Training Hub Team
       <div className="bg-white rounded-lg p-6 shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
+            {/* Profile Photo in Info Section */}
+            {trainee.photo && (
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+                  <img
+                    src={trainee.photo}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Profile Photo</p>
+                  <p className="font-medium text-gray-900">Uploaded</p>
+                </div>
+              </div>
+            )}
+            
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiUser} className="text-gray-400" />
               <div>
@@ -170,7 +194,6 @@ Maysalward Training Hub Team
                 <p className="font-medium">{trainee.name}</p>
               </div>
             </div>
-            
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiHash} className="text-gray-400" />
               <div>
@@ -178,7 +201,6 @@ Maysalward Training Hub Team
                 <p className="font-mono text-sm">{trainee.serialNumber}</p>
               </div>
             </div>
-
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiCalendar} className="text-gray-400" />
               <div>
@@ -196,7 +218,6 @@ Maysalward Training Hub Team
                 <p className="font-medium">{trainee.email}</p>
               </div>
             </div>
-
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiStar} className="text-gray-400" />
               <div>
@@ -204,7 +225,6 @@ Maysalward Training Hub Team
                 <p className="font-medium text-blue-600">{trainee.points} points</p>
               </div>
             </div>
-
             <div>
               <p className="text-sm text-gray-600 mb-1">Education</p>
               <p className="text-sm bg-gray-50 p-2 rounded">{trainee.education}</p>
@@ -225,7 +245,6 @@ Maysalward Training Hub Team
             <SafeIcon icon={FiDownload} />
             <span>Download Card</span>
           </motion.button>
-          
           <motion.button
             onClick={shareByEmail}
             whileHover={{ scale: 1.02 }}
