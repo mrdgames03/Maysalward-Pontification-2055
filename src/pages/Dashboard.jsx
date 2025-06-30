@@ -8,12 +8,12 @@ import StatCard from '../components/StatCard';
 import RecentActivity from '../components/RecentActivity';
 import EducationManagementModal from '../components/EducationManagementModal';
 
-const { FiUsers, FiUserCheck, FiScan, FiFlag, FiTrendingUp, FiActivity, FiBook, FiAward, FiSettings } = FiIcons;
+const { FiUsers, FiUserCheck, FiScan, FiFlag, FiTrendingUp, FiActivity, FiBook, FiAward, FiSettings, FiUser } = FiIcons;
 
 const Dashboard = () => {
   const { getTraineeStats, checkIns, trainees, trainingSessions, courses } = useTrainee();
   const [showEducationModal, setShowEducationModal] = useState(false);
-  
+
   const stats = getTraineeStats();
 
   const quickActions = [
@@ -37,6 +37,13 @@ const Dashboard = () => {
       icon: FiUserCheck,
       color: 'purple',
       path: '/trainees'
+    },
+    {
+      title: 'Manage Instructors',
+      description: 'Add and manage course instructors',
+      icon: FiUser,
+      color: 'indigo',
+      path: '/instructors'
     }
   ];
 
@@ -56,7 +63,6 @@ const Dashboard = () => {
             Manage your trainees efficiently with our comprehensive system
           </p>
         </div>
-        
         {/* Admin Settings */}
         <div className="ml-4">
           <motion.button
@@ -102,11 +108,11 @@ const Dashboard = () => {
           trend={`+${stats.completedSessions}`}
         />
         <StatCard
-          title="Courses"
-          value={stats.totalCourses}
-          icon={FiAward}
-          color="green"
-          trend={`+${stats.completedCourses} completed`}
+          title="Instructors"
+          value={stats.totalInstructors}
+          icon={FiUser}
+          color="indigo"
+          trend="+3"
         />
         <StatCard
           title="Total Flags"
@@ -118,7 +124,7 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {quickActions.map((action, index) => (
           <motion.div
             key={action.title}
@@ -161,7 +167,6 @@ const Dashboard = () => {
             <SafeIcon icon={FiTrendingUp} className="text-xl text-green-600" />
             <h2 className="text-xl font-semibold text-gray-900">Top Performers</h2>
           </div>
-
           <div className="space-y-4">
             {trainees
               .sort((a, b) => b.points - a.points)
@@ -172,11 +177,17 @@ const Dashboard = () => {
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                      index === 0 ? 'bg-yellow-500' : 
-                      index === 1 ? 'bg-gray-400' : 
-                      index === 2 ? 'bg-orange-500' : 'bg-blue-500'
-                    }`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                        index === 0
+                          ? 'bg-yellow-500'
+                          : index === 1
+                          ? 'bg-gray-400'
+                          : index === 2
+                          ? 'bg-orange-500'
+                          : 'bg-blue-500'
+                      }`}
+                    >
                       {index + 1}
                     </div>
                     <div>
@@ -189,7 +200,6 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
-
             {trainees.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <SafeIcon icon={FiUsers} className="text-4xl mx-auto mb-2 opacity-50" />

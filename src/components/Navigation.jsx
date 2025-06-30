@@ -5,7 +5,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useAuth } from '../context/AuthContext';
 
-const { FiHome, FiUserPlus, FiCamera, FiUsers, FiMenu, FiX, FiLogOut, FiBook } = FiIcons;
+const { FiHome, FiUserPlus, FiCamera, FiUsers, FiMenu, FiX, FiLogOut, FiBook, FiUser } = FiIcons;
 
 const Navigation = () => {
   const location = useLocation();
@@ -17,7 +17,8 @@ const Navigation = () => {
     { path: '/register', label: 'Register', icon: FiUserPlus },
     { path: '/scanner', label: 'Scanner', icon: FiCamera },
     { path: '/trainees', label: 'Trainees', icon: FiUsers },
-    { path: '/training-courses', label: 'Courses', icon: FiBook }
+    { path: '/training-courses', label: 'Courses', icon: FiBook },
+    { path: '/instructors', label: 'Instructors', icon: FiUser }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -102,10 +103,7 @@ const Navigation = () => {
               className="p-2 rounded-lg hover:bg-gray-100"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <SafeIcon
-                icon={isMobileMenuOpen ? FiX : FiMenu}
-                className="text-xl text-gray-600"
-              />
+              <SafeIcon icon={isMobileMenuOpen ? FiX : FiMenu} className="text-xl text-gray-600" />
             </button>
           </div>
         </div>

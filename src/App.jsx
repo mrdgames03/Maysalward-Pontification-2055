@@ -11,6 +11,7 @@ import Scanner from './pages/Scanner';
 import TraineeList from './pages/TraineeList';
 import TraineeDetails from './pages/TraineeDetails';
 import TrainingCourses from './pages/TrainingCourses';
+import Instructors from './pages/Instructors';
 import './App.css';
 
 const AppContent = () => {
@@ -47,6 +48,7 @@ const AppContent = () => {
               <Route path="/trainees" element={<TraineeList />} />
               <Route path="/trainee/:id" element={<TraineeDetails />} />
               <Route path="/training-courses" element={<TrainingCourses />} />
+              <Route path="/instructors" element={<Instructors />} />
             </Routes>
           </main>
         </div>

@@ -16,6 +16,7 @@ export const TraineeProvider = ({ children }) => {
   const [trainingSessions, setTrainingSessions] = useState([]);
   const [courses, setCourses] = useState([]);
   const [trainingCourses, setTrainingCourses] = useState([]);
+  const [instructors, setInstructors] = useState([]);
   const [educationOptions, setEducationOptions] = useState([
     'School Student',
     'University Student',
@@ -55,6 +56,25 @@ export const TraineeProvider = ({ children }) => {
     'Ma\'an'
   ]);
 
+  // Instructor Courses (predefined + custom)
+  const [instructorCourses, setInstructorCourses] = useState([
+    'Unity',
+    'Blender',
+    'Maya',
+    'Photoshop',
+    'Illustrator',
+    'After Effects',
+    'React',
+    'Vue.js',
+    'Angular',
+    'Node.js',
+    'Python',
+    'Java',
+    'C#',
+    'JavaScript',
+    'TypeScript'
+  ]);
+
   // Load data from localStorage on mount
   useEffect(() => {
     const savedTrainees = localStorage.getItem('trainees');
@@ -62,9 +82,11 @@ export const TraineeProvider = ({ children }) => {
     const savedTrainingSessions = localStorage.getItem('trainingSessions');
     const savedCourses = localStorage.getItem('courses');
     const savedTrainingCourses = localStorage.getItem('trainingCourses');
+    const savedInstructors = localStorage.getItem('instructors');
     const savedEducationOptions = localStorage.getItem('educationOptions');
     const savedCourseCategories = localStorage.getItem('courseCategories');
     const savedLocations = localStorage.getItem('locations');
+    const savedInstructorCourses = localStorage.getItem('instructorCourses');
 
     if (savedTrainees) {
       setTrainees(JSON.parse(savedTrainees));
@@ -81,6 +103,9 @@ export const TraineeProvider = ({ children }) => {
     if (savedTrainingCourses) {
       setTrainingCourses(JSON.parse(savedTrainingCourses));
     }
+    if (savedInstructors) {
+      setInstructors(JSON.parse(savedInstructors));
+    }
     if (savedEducationOptions) {
       setEducationOptions(JSON.parse(savedEducationOptions));
     }
@@ -89,6 +114,9 @@ export const TraineeProvider = ({ children }) => {
     }
     if (savedLocations) {
       setLocations(JSON.parse(savedLocations));
+    }
+    if (savedInstructorCourses) {
+      setInstructorCourses(JSON.parse(savedInstructorCourses));
     }
   }, []);
 
@@ -114,6 +142,10 @@ export const TraineeProvider = ({ children }) => {
   }, [trainingCourses]);
 
   useEffect(() => {
+    localStorage.setItem('instructors', JSON.stringify(instructors));
+  }, [instructors]);
+
+  useEffect(() => {
     localStorage.setItem('educationOptions', JSON.stringify(educationOptions));
   }, [educationOptions]);
 
@@ -124,6 +156,10 @@ export const TraineeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('locations', JSON.stringify(locations));
   }, [locations]);
+
+  useEffect(() => {
+    localStorage.setItem('instructorCourses', JSON.stringify(instructorCourses));
+  }, [instructorCourses]);
 
   const generateSerialNumber = () => {
     const timestamp = Date.now().toString(36);
@@ -172,6 +208,95 @@ export const TraineeProvider = ({ children }) => {
   // Bulk delete function
   const bulkDeleteTrainees = (traineeIds) => {
     traineeIds.forEach(id => deleteTrainee(id));
+  };
+
+  // Instructor Management
+  const addInstructor = (instructorData) => {
+    const newInstructor = {
+      ...instructorData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      status: 'active'
+    };
+
+    setInstructors(prev => [...prev, newInstructor]);
+    return newInstructor;
+  };
+
+  const updateInstructor = (id, updates) => {
+    setInstructors(prev => prev.map(instructor => 
+      instructor.id === id ? { ...instructor, ...updates, updatedAt: new Date().toISOString() } : instructor
+    ));
+  };
+
+  const deleteInstructor = (instructorId) => {
+    setInstructors(prev => prev.filter(instructor => instructor.id !== instructorId));
+  };
+
+  const getInstructorById = (id) => {
+    return instructors.find(i => i.id === id);
+  };
+
+  const getInstructorsByName = (name) => {
+    return instructors.filter(i => i.name.toLowerCase().includes(name.toLowerCase()));
+  };
+
+  const getInstructorsByCourse = (course) => {
+    return instructors.filter(i => i.availableCourses.includes(course));
+  };
+
+  // Instructor Courses Management
+  const addInstructorCourse = (course) => {
+    const trimmedCourse = course.trim();
+    if (trimmedCourse && !instructorCourses.includes(trimmedCourse)) {
+      setInstructorCourses(prev => [...prev, trimmedCourse].sort());
+      return true;
+    }
+    return false;
+  };
+
+  const removeInstructorCourse = (course) => {
+    // Check if any instructor is using this course
+    const isInUse = instructors.some(instructor => instructor.availableCourses.includes(course));
+    if (isInUse) {
+      return {
+        success: false,
+        message: 'Cannot remove course that is currently assigned to instructors'
+      };
+    }
+    
+    setInstructorCourses(prev => prev.filter(c => c !== course));
+    return { success: true };
+  };
+
+  const updateInstructorCourse = (oldCourse, newCourse) => {
+    const trimmedNewCourse = newCourse.trim();
+    if (!trimmedNewCourse) {
+      return { success: false, message: 'Course name cannot be empty' };
+    }
+    
+    if (oldCourse === trimmedNewCourse) {
+      return { success: true };
+    }
+    
+    if (instructorCourses.includes(trimmedNewCourse)) {
+      return { success: false, message: 'Course already exists' };
+    }
+    
+    // Update instructor courses
+    setInstructorCourses(prev => 
+      prev.map(course => course === oldCourse ? trimmedNewCourse : course).sort()
+    );
+    
+    // Update all instructors using the old course
+    setInstructors(prev => prev.map(instructor => ({
+      ...instructor,
+      availableCourses: instructor.availableCourses.map(course => 
+        course === oldCourse ? trimmedNewCourse : course
+      )
+    })));
+    
+    return { success: true };
   };
 
   // Education Options Management
@@ -558,6 +683,7 @@ export const TraineeProvider = ({ children }) => {
     const totalCourses = courses.length;
     const completedCourses = courses.filter(c => c.status === 'completed').length;
     const totalTrainingCourses = trainingCourses.length;
+    const totalInstructors = instructors.length;
 
     return {
       totalTrainees,
@@ -568,7 +694,8 @@ export const TraineeProvider = ({ children }) => {
       completedSessions,
       totalCourses,
       completedCourses,
-      totalTrainingCourses
+      totalTrainingCourses,
+      totalInstructors
     };
   };
 
@@ -590,13 +717,24 @@ export const TraineeProvider = ({ children }) => {
     trainingSessions,
     courses,
     trainingCourses,
+    instructors,
     educationOptions,
     courseCategories,
     locations,
+    instructorCourses,
     addTrainee,
     updateTrainee,
     deleteTrainee,
-    bulkDeleteTrainees, // NEW: Added bulk delete function
+    bulkDeleteTrainees,
+    addInstructor,
+    updateInstructor,
+    deleteInstructor,
+    getInstructorById,
+    getInstructorsByName,
+    getInstructorsByCourse,
+    addInstructorCourse,
+    removeInstructorCourse,
+    updateInstructorCourse,
     checkInTrainee,
     flagTrainee,
     addEducationOption,

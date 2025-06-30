@@ -124,15 +124,19 @@ Maysalward Training Hub Team
             </div>
             
             {/* Profile Photo */}
-            {trainee.photo && (
-              <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/20 border-2 border-white/30">
-                <img
-                  src={trainee.photo}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/20 border-2 border-white/30">
+              {trainee.photo ? (
+                <img 
+                  src={trainee.photo} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover" 
                 />
-              </div>
-            )}
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <SafeIcon icon={FiUser} className="text-white/60 text-xl" />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Main Content */}
@@ -174,10 +178,10 @@ Maysalward Training Hub Team
             {trainee.photo && (
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
-                  <img
-                    src={trainee.photo}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
+                  <img 
+                    src={trainee.photo} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
                   />
                 </div>
                 <div>
@@ -186,7 +190,7 @@ Maysalward Training Hub Team
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiUser} className="text-gray-400" />
               <div>
@@ -194,6 +198,7 @@ Maysalward Training Hub Team
                 <p className="font-medium">{trainee.name}</p>
               </div>
             </div>
+
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiHash} className="text-gray-400" />
               <div>
@@ -201,6 +206,7 @@ Maysalward Training Hub Team
                 <p className="font-mono text-sm">{trainee.serialNumber}</p>
               </div>
             </div>
+
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiCalendar} className="text-gray-400" />
               <div>
@@ -218,6 +224,7 @@ Maysalward Training Hub Team
                 <p className="font-medium">{trainee.email}</p>
               </div>
             </div>
+
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiStar} className="text-gray-400" />
               <div>
@@ -225,6 +232,7 @@ Maysalward Training Hub Team
                 <p className="font-medium text-blue-600">{trainee.points} points</p>
               </div>
             </div>
+
             <div>
               <p className="text-sm text-gray-600 mb-1">Education</p>
               <p className="text-sm bg-gray-50 p-2 rounded">{trainee.education}</p>

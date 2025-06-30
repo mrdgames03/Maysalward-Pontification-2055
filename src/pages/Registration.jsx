@@ -1,23 +1,24 @@
-import React,{useState} from 'react';
-import {motion} from 'framer-motion';
-import {useNavigate} from 'react-router-dom';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-import {useTrainee} from '../context/TraineeContext';
+import { useTrainee } from '../context/TraineeContext';
 import TraineeCard from '../components/TraineeCard';
 import PhotoUpload from '../components/PhotoUpload';
 
-const {FiUser,FiPhone,FiMail,FiCalendar,FiBook,FiSave,FiCheckCircle,FiPlus,FiStar}=FiIcons;
+const { FiUser, FiPhone, FiMail, FiCalendar, FiBook, FiSave, FiCheckCircle, FiPlus, FiStar } = FiIcons;
 
-const Registration=()=> {
-  const navigate=useNavigate();
-  const {addTrainee,educationOptions,addEducationOption}=useTrainee();
-  const [isSubmitting,setIsSubmitting]=useState(false);
-  const [newTrainee,setNewTrainee]=useState(null);
-  const [showCustomEducation,setShowCustomEducation]=useState(false);
-  const [customEducation,setCustomEducation]=useState('');
-  const [photoUploaded,setPhotoUploaded]=useState(false);
-  const [formData,setFormData]=useState({
+const Registration = () => {
+  const navigate = useNavigate();
+  const { addTrainee, educationOptions, addEducationOption } = useTrainee();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newTrainee, setNewTrainee] = useState(null);
+  const [showCustomEducation, setShowCustomEducation] = useState(false);
+  const [customEducation, setCustomEducation] = useState('');
+  const [photoUploaded, setPhotoUploaded] = useState(false);
+
+  const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
@@ -25,74 +26,66 @@ const Registration=()=> {
     education: '',
     photo: null
   });
-  const [errors,setErrors]=useState({});
 
-  const validateForm=()=> {
-    const newErrors={};
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name='Name is required';
+      newErrors.name = 'Name is required';
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone='Phone number is required';
+      newErrors.phone = 'Phone number is required';
     } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
-      newErrors.phone='Please enter a valid phone number';
+      newErrors.phone = 'Please enter a valid phone number';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email='Email is required';
+      newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email='Please enter a valid email address';
+      newErrors.email = 'Please enter a valid email address';
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth='Date of birth is required';
+      newErrors.dateOfBirth = 'Date of birth is required';
     }
 
     if (!formData.education.trim()) {
-      newErrors.education='Educational background is required';
+      newErrors.education = 'Educational background is required';
     }
 
     if (showCustomEducation && !customEducation.trim()) {
-      newErrors.customEducation='Please enter the custom education option';
+      newErrors.customEducation = 'Please enter the custom education option';
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length===0;
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange=(e)=> {
-    const {name,value}=e.target;
-    setFormData(prev=> ({
-      ...prev,
-      [name]: value
-    }));
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev=> ({
-        ...prev,
-        [name]: ''
-      }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
 
-    // If education changes to something other than 'custom',hide custom input
-    if (name==='education' && value !=='custom') {
+    // If education changes to something other than 'custom', hide custom input
+    if (name === 'education' && value !== 'custom') {
       setShowCustomEducation(false);
       setCustomEducation('');
     }
   };
 
-  const handlePhotoChange=(photo)=> {
-    const hadPhoto=!!formData.photo;
-    const hasPhoto=!!photo;
+  const handlePhotoChange = (photo) => {
+    const hadPhoto = !!formData.photo;
+    const hasPhoto = !!photo;
     
-    setFormData(prev=> ({
-      ...prev,
-      photo
-    }));
-
+    setFormData(prev => ({ ...prev, photo }));
+    
     // Track if photo was just uploaded (not removed)
     if (!hadPhoto && hasPhoto) {
       setPhotoUploaded(true);
@@ -101,92 +94,65 @@ const Registration=()=> {
     }
   };
 
-  const handleEducationChange=(e)=> {
-    const value=e.target.value;
-    if (value==='custom') {
+  const handleEducationChange = (e) => {
+    const value = e.target.value;
+    if (value === 'custom') {
       setShowCustomEducation(true);
-      setFormData(prev=> ({
-        ...prev,
-        education: ''
-      }));
+      setFormData(prev => ({ ...prev, education: '' }));
     } else {
       setShowCustomEducation(false);
       setCustomEducation('');
-      setFormData(prev=> ({
-        ...prev,
-        education: value
-      }));
+      setFormData(prev => ({ ...prev, education: value }));
     }
 
     // Clear error
     if (errors.education) {
-      setErrors(prev=> ({
-        ...prev,
-        education: ''
-      }));
+      setErrors(prev => ({ ...prev, education: '' }));
     }
   };
 
-  const handleCustomEducationChange=(e)=> {
+  const handleCustomEducationChange = (e) => {
     setCustomEducation(e.target.value);
-    setFormData(prev=> ({
-      ...prev,
-      education: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, education: e.target.value }));
 
     // Clear error
     if (errors.customEducation || errors.education) {
-      setErrors(prev=> ({
-        ...prev,
-        customEducation: '',
-        education: ''
-      }));
+      setErrors(prev => ({ ...prev, customEducation: '', education: '' }));
     }
   };
 
-  const handleAddCustomEducation=()=> {
+  const handleAddCustomEducation = () => {
     if (customEducation.trim()) {
-      const success=addEducationOption(customEducation.trim());
+      const success = addEducationOption(customEducation.trim());
       if (success) {
-        setFormData(prev=> ({
-          ...prev,
-          education: customEducation.trim()
-        }));
+        setFormData(prev => ({ ...prev, education: customEducation.trim() }));
         setShowCustomEducation(false);
         setCustomEducation('');
       }
     }
   };
 
-  const handleSubmit=async (e)=> {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      // If using custom education,add it to options first
+      // If using custom education, add it to options first
       if (showCustomEducation && customEducation.trim()) {
         addEducationOption(customEducation.trim());
-        setFormData(prev=> ({
-          ...prev,
-          education: customEducation.trim()
-        }));
+        setFormData(prev => ({ ...prev, education: customEducation.trim() }));
       }
 
       // Simulate API delay
-      await new Promise(resolve=> setTimeout(resolve,1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Calculate initial points - 5 points for photo upload
-      const initialPoints=photoUploaded ? 5 : 0;
+      const initialPoints = photoUploaded ? 5 : 0;
 
-      const trainee=addTrainee({
-        ...formData,
-        points: initialPoints
-      });
-
+      const trainee = addTrainee({ ...formData, points: initialPoints });
       setNewTrainee(trainee);
 
       // Reset form
@@ -202,32 +168,30 @@ const Registration=()=> {
       setCustomEducation('');
       setPhotoUploaded(false);
     } catch (error) {
-      console.error('Error registering trainee:',error);
+      console.error('Error registering trainee:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleNewRegistration=()=> {
+  const handleNewRegistration = () => {
     setNewTrainee(null);
   };
 
   if (newTrainee) {
     return (
       <motion.div
-        initial={{opacity: 0,scale: 0.9}}
-        animate={{opacity: 1,scale: 1}}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
         className="max-w-2xl mx-auto"
       >
         <div className="bg-white rounded-xl p-8 shadow-lg text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <SafeIcon icon={FiCheckCircle} className="text-3xl text-green-600" />
           </div>
-          
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Registration Successful!
           </h2>
-          
           <p className="text-gray-600 mb-4">
             Trainee has been registered successfully.
           </p>
@@ -235,9 +199,9 @@ const Registration=()=> {
           {/* Points Award Message */}
           {newTrainee.points > 0 && (
             <motion.div
-              initial={{opacity: 0,y: 10}}
-              animate={{opacity: 1,y: 0}}
-              transition={{delay: 0.5}}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
               className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6"
             >
               <div className="flex items-center justify-center space-x-2">
@@ -263,7 +227,7 @@ const Registration=()=> {
               Register Another Trainee
             </button>
             <button
-              onClick={()=> navigate('/dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
             >
               Back to Dashboard
@@ -276,8 +240,8 @@ const Registration=()=> {
 
   return (
     <motion.div
-      initial={{opacity: 0,y: 20}}
-      animate={{opacity: 1,y: 0}}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto"
     >
       <div className="bg-white rounded-xl p-8 shadow-lg">
@@ -295,12 +259,13 @@ const Registration=()=> {
           <div className="relative">
             <PhotoUpload 
               photo={formData.photo} 
-              onPhotoChange={handlePhotoChange} 
+              onPhotoChange={handlePhotoChange}
+              type="trainee"
             />
             {/* Points Info */}
             <motion.div
-              initial={{opacity: 0,y: -10}}
-              animate={{opacity: 1,y: 0}}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
               className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg"
             >
               <div className="flex items-center justify-center space-x-2">
@@ -310,11 +275,12 @@ const Registration=()=> {
                 </span>
               </div>
             </motion.div>
+            
             {/* Photo Uploaded Confirmation */}
             {photoUploaded && (
               <motion.div
-                initial={{opacity: 0,scale: 0.9}}
-                animate={{opacity: 1,scale: 1}}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
                 className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg"
               >
                 <div className="flex items-center justify-center space-x-2">
@@ -444,7 +410,7 @@ const Registration=()=> {
                 }`}
               >
                 <option value="">Select educational background</option>
-                {educationOptions.map(option=> (
+                {educationOptions.map(option => (
                   <option key={option} value={option}>{option}</option>
                 ))}
                 <option value="custom">+ Add Custom Option</option>
@@ -458,9 +424,9 @@ const Registration=()=> {
           {/* Custom Education Input */}
           {showCustomEducation && (
             <motion.div
-              initial={{opacity: 0,height: 0}}
-              animate={{opacity: 1,height: 'auto'}}
-              exit={{opacity: 0,height: 0}}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
             >
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Custom Educational Background *
@@ -499,8 +465,8 @@ const Registration=()=> {
           <motion.button
             type="submit"
             disabled={isSubmitting}
-            whileHover={{scale: 1.02}}
-            whileTap={{scale: 0.98}}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
           >
             {isSubmitting ? (

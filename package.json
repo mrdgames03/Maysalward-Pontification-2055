@@ -1,13 +1,15 @@
 {
   "name": "maysalward-training-hub",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint . --fix",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "clean": "rm -rf dist node_modules/.vite",
+    "prebuild": "npm run clean"
   },
   "dependencies": {
     "react": "^18.3.1",
