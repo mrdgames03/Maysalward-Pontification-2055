@@ -19,7 +19,15 @@ import TraineeProfile from './pages/TraineeProfile';
 import './App.css';
 
 const AppContent = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, createTraineeUser, updateTraineeUser, deleteTraineeUser } = useAuth();
+
+  // Make auth context available globally for trainee management
+  React.useEffect(() => {
+    window.authContext = { createTraineeUser, updateTraineeUser, deleteTraineeUser };
+    return () => {
+      delete window.authContext;
+    };
+  }, [createTraineeUser, updateTraineeUser, deleteTraineeUser]);
 
   if (isLoading) {
     return (

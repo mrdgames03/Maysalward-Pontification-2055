@@ -4,20 +4,22 @@ import { useNavigate } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useTrainee } from '../context/TraineeContext';
+import { useAuth } from '../context/AuthContext';
 import TraineeCard from '../components/TraineeCard';
 import PhotoUpload from '../components/PhotoUpload';
 
-const { FiUser, FiPhone, FiMail, FiCalendar, FiBook, FiSave, FiCheckCircle, FiPlus, FiStar } = FiIcons;
+const { FiUser, FiPhone, FiMail, FiCalendar, FiBook, FiSave, FiCheckCircle, FiPlus, FiStar, FiKey } = FiIcons;
 
 const Registration = () => {
   const navigate = useNavigate();
   const { addTrainee, educationOptions, addEducationOption } = useTrainee();
+  const { createTraineeUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newTrainee, setNewTrainee] = useState(null);
+  const [newUserAccount, setNewUserAccount] = useState(null);
   const [showCustomEducation, setShowCustomEducation] = useState(false);
   const [customEducation, setCustomEducation] = useState('');
   const [photoUploaded, setPhotoUploaded] = useState(false);
-
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -26,7 +28,6 @@ const Registration = () => {
     education: '',
     photo: null
   });
-
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
@@ -83,9 +84,8 @@ const Registration = () => {
   const handlePhotoChange = (photo) => {
     const hadPhoto = !!formData.photo;
     const hasPhoto = !!photo;
-    
     setFormData(prev => ({ ...prev, photo }));
-    
+
     // Track if photo was just uploaded (not removed)
     if (!hadPhoto && hasPhoto) {
       setPhotoUploaded(true);
@@ -134,6 +134,7 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) {
       return;
     }
@@ -152,8 +153,16 @@ const Registration = () => {
       // Calculate initial points - 5 points for photo upload
       const initialPoints = photoUploaded ? 5 : 0;
 
-      const trainee = addTrainee({ ...formData, points: initialPoints });
+      const trainee = addTrainee({
+        ...formData,
+        points: initialPoints
+      });
+
+      // Create user account automatically
+      const userAccount = createTraineeUser(trainee);
+
       setNewTrainee(trainee);
+      setNewUserAccount(userAccount);
 
       // Reset form
       setFormData({
@@ -176,6 +185,7 @@ const Registration = () => {
 
   const handleNewRegistration = () => {
     setNewTrainee(null);
+    setNewUserAccount(null);
   };
 
   if (newTrainee) {
@@ -189,12 +199,31 @@ const Registration = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <SafeIcon icon={FiCheckCircle} className="text-3xl text-green-600" />
           </div>
+
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Registration Successful!
           </h2>
           <p className="text-gray-600 mb-4">
-            Trainee has been registered successfully.
+            Trainee has been registered successfully and a user account has been created.
           </p>
+
+          {/* User Account Created Message */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+          >
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <SafeIcon icon={FiKey} className="text-blue-600 text-lg" />
+              <span className="text-blue-900 font-medium">User Account Created!</span>
+            </div>
+            <div className="text-blue-800 text-sm space-y-1">
+              <p><strong>Username:</strong> {newUserAccount?.username}</p>
+              <p><strong>Password:</strong> 12345 (default)</p>
+              <p className="text-blue-600 mt-2">The trainee can now log in to access their profile and redeem gifts!</p>
+            </div>
+          </motion.div>
 
           {/* Points Award Message */}
           {newTrainee.points > 0 && (
@@ -250,15 +279,15 @@ const Registration = () => {
             Register New Trainee
           </h1>
           <p className="text-gray-600">
-            Fill in the details to register a new trainee in the system
+            Fill in the details to register a new trainee and create their user account
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Photo Upload with Points Info */}
           <div className="relative">
-            <PhotoUpload 
-              photo={formData.photo} 
+            <PhotoUpload
+              photo={formData.photo}
               onPhotoChange={handlePhotoChange}
               type="trainee"
             />
@@ -275,7 +304,7 @@ const Registration = () => {
                 </span>
               </div>
             </motion.div>
-            
+
             {/* Photo Uploaded Confirmation */}
             {photoUploaded && (
               <motion.div
@@ -346,7 +375,7 @@ const Registration = () => {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address *
+              Email Address * <span className="text-blue-600 text-xs">(will be used as username)</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -366,6 +395,9 @@ const Registration = () => {
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
             )}
+            <p className="mt-1 text-xs text-gray-500">
+              A user account will be created automatically with this email as username and password "12345"
+            </p>
           </div>
 
           {/* Date of Birth */}
@@ -461,6 +493,24 @@ const Registration = () => {
             </motion.div>
           )}
 
+          {/* User Account Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+          >
+            <div className="flex items-center space-x-2 mb-2">
+              <SafeIcon icon={FiKey} className="text-blue-600" />
+              <span className="text-blue-900 font-medium">Auto User Account Creation</span>
+            </div>
+            <div className="text-blue-800 text-sm">
+              <p>✅ Username will be set to the email address</p>
+              <p>✅ Default password will be: <strong>12345</strong></p>
+              <p>✅ Trainee can change password after first login</p>
+              <p>✅ Account will have trainee permissions to view profile and redeem gifts</p>
+            </div>
+          </motion.div>
+
           {/* Submit Button */}
           <motion.button
             type="submit"
@@ -474,7 +524,7 @@ const Registration = () => {
             ) : (
               <>
                 <SafeIcon icon={FiSave} />
-                <span>Register Trainee</span>
+                <span>Register Trainee & Create Account</span>
               </>
             )}
           </motion.button>

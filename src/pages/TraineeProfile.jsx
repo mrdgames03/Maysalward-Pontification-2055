@@ -9,19 +9,11 @@ import TraineeCard from '../components/TraineeCard';
 import ProgressionProgress from '../components/ProgressionProgress';
 import { getCurrentLevel } from '../utils/progressionSystem';
 
-const { FiUser, FiStar, FiBook, FiGift, FiActivity, FiCalendar, FiAward } = FiIcons;
+const { FiUser, FiStar, FiBook, FiGift, FiActivity, FiCalendar, FiAward, FiDownload, FiMail, FiShare2, FiCreditCard } = FiIcons;
 
 const TraineeProfile = () => {
   const { currentUser } = useAuth();
-  const { 
-    trainees, 
-    getTraineeCheckIns, 
-    getTraineeCourses, 
-    getTraineeTrainingSessions,
-    gifts,
-    getAvailableGiftsForTrainee,
-    getTraineeRedemptions 
-  } = useTrainee();
+  const { trainees, getTraineeCheckIns, getTraineeCourses, getTraineeTrainingSessions, gifts, getAvailableGiftsForTrainee, getTraineeRedemptions } = useTrainee();
 
   // Find trainee by username (assuming username matches some trainee identifier)
   const trainee = trainees.find(t => 
@@ -56,48 +48,18 @@ const TraineeProfile = () => {
   const trainingSessions = getTraineeTrainingSessions(trainee.id);
   const availableGifts = getAvailableGiftsForTrainee(trainee.id);
   const redemptions = getTraineeRedemptions(trainee.id);
-
   const currentLevel = getCurrentLevel(trainee.points);
+
   const completedCourses = courses.filter(c => c.status === 'completed').length;
   const completedSessions = trainingSessions.filter(s => s.status === 'completed').length;
 
   const stats = [
-    {
-      icon: FiStar,
-      label: 'Total Points',
-      value: trainee.points,
-      color: 'blue'
-    },
-    {
-      icon: FiBook,
-      label: 'Completed Courses',
-      value: `${completedCourses}/${courses.length}`,
-      color: 'green'
-    },
-    {
-      icon: FiActivity,
-      label: 'Training Sessions',
-      value: `${completedSessions}/${trainingSessions.length}`,
-      color: 'purple'
-    },
-    {
-      icon: FiGift,
-      label: 'Available Gifts',
-      value: availableGifts.length,
-      color: 'yellow'
-    },
-    {
-      icon: FiCalendar,
-      label: 'Check-ins',
-      value: checkIns.length,
-      color: 'indigo'
-    },
-    {
-      icon: FiAward,
-      label: 'Redemptions',
-      value: redemptions.length,
-      color: 'pink'
-    }
+    { icon: FiStar, label: 'Total Points', value: trainee.points, color: 'blue' },
+    { icon: FiBook, label: 'Completed Courses', value: `${completedCourses}/${courses.length}`, color: 'green' },
+    { icon: FiActivity, label: 'Training Sessions', value: `${completedSessions}/${trainingSessions.length}`, color: 'purple' },
+    { icon: FiGift, label: 'Available Gifts', value: availableGifts.length, color: 'yellow' },
+    { icon: FiCalendar, label: 'Check-ins', value: checkIns.length, color: 'indigo' },
+    { icon: FiAward, label: 'Redemptions', value: redemptions.length, color: 'pink' }
   ];
 
   const getColorClasses = (color) => {
@@ -120,13 +82,22 @@ const TraineeProfile = () => {
         <p className="text-gray-600">Track your progress and achievements</p>
       </div>
 
-      {/* Main Profile Card */}
+      {/* Membership Card Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto"
+        className="bg-white rounded-xl p-6 shadow-lg"
       >
-        <TraineeCard trainee={trainee} showActions={true} />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <SafeIcon icon={FiCreditCard} className="text-blue-600 text-xl" />
+            <h2 className="text-xl font-semibold text-gray-900">My Membership Card</h2>
+          </div>
+        </div>
+        
+        <div className="max-w-4xl mx-auto">
+          <TraineeCard trainee={trainee} showActions={true} />
+        </div>
       </motion.div>
 
       {/* Progress Section */}
