@@ -14,7 +14,6 @@ const LoginScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetUsername, setResetUsername] = useState('');
-
   const { login, resetPassword } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -70,24 +69,9 @@ const LoginScreen = () => {
   };
 
   const userRoles = [
-    {
-      username: 'sadmin',
-      role: 'Super Admin',
-      description: 'Full system access',
-      color: 'bg-red-100 text-red-800'
-    },
-    {
-      username: 'admin',
-      role: 'Admin',
-      description: 'Manage courses & trainees',
-      color: 'bg-blue-100 text-blue-800'
-    },
-    {
-      username: 'trainee',
-      role: 'Trainee',
-      description: 'View progress & courses',
-      color: 'bg-green-100 text-green-800'
-    }
+    { username: 'sadmin', role: 'Super Admin', description: 'Full system access', color: 'bg-red-100 text-red-800' },
+    { username: 'admin', role: 'Admin', description: 'Manage courses & trainees', color: 'bg-blue-100 text-blue-800' },
+    { username: 'trainee', role: 'Trainee', description: 'View progress & courses', color: 'bg-green-100 text-green-800' }
   ];
 
   return (
@@ -106,9 +90,9 @@ const LoginScreen = () => {
             transition={{ delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg"
           >
-            <img
-              src="/logo.png"
-              alt="Maysalward Logo"
+            <img 
+              src="/logo.png" 
+              alt="Maysalward Logo" 
               className="w-12 h-12 object-contain"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -117,7 +101,6 @@ const LoginScreen = () => {
             />
             <SafeIcon icon={FiShield} className="text-white text-2xl hidden" />
           </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -321,7 +304,7 @@ const LoginScreen = () => {
           transition={{ delay: 0.8 }}
           className="mt-8 text-center text-sm text-gray-500"
         >
-          <p>© 2024 Maysalward Training Hub</p>
+          <p>© 2025 Maysalward Training Hub</p>
           <p>Role-Based Access Control System</p>
         </motion.div>
       </motion.div>

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { useAuth } from '../context/AuthContext';
 import { PROGRESSION_LEVELS, getCurrentLevel } from '../utils/progressionSystem';
 
 const { FiX, FiTrendingUp, FiStar, FiLock, FiEye, FiEyeOff, FiShield, FiAlertTriangle, FiCheckCircle } = FiIcons;
 
 const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
+  const { hasPermission, currentUser } = useAuth();
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +17,10 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Admin password (same as login)
-  const ADMIN_PASSWORD = '1234';
+  const ADMIN_PASSWORD = '12345';
+
+  // Check if user has upgrade_levels permission (Super Admin only)
+  const canUpgradeLevels = hasPermission('upgrade_levels');
 
   React.useEffect(() => {
     if (isOpen && trainee) {
@@ -29,6 +34,84 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
   }, [isOpen, trainee]);
 
   if (!isOpen || !trainee) return null;
+
+  // If user doesn't have permission to upgrade levels
+  if (!canUpgradeLevels) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="bg-white rounded-xl p-6 w-full max-w-md"
+        >
+          {/* Access Denied Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <SafeIcon icon={FiLock} className="text-red-600 text-xl" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Access Denied</h2>
+                <p className="text-red-600 text-sm">Insufficient Permissions</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <SafeIcon icon={FiX} className="text-xl text-gray-600" />
+            </button>
+          </div>
+
+          {/* Permission Error Message */}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center space-x-2">
+              <SafeIcon icon={FiAlertTriangle} className="text-red-600" />
+              <div>
+                <p className="font-medium text-red-900">Level Upgrade Restricted</p>
+                <p className="text-red-700 text-sm">
+                  Only Super Administrators can upgrade trainee levels.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Current User Info */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center space-x-2 mb-2">
+              <SafeIcon icon={FiShield} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Your Access Level</span>
+            </div>
+            <p className="text-sm text-gray-600">{currentUser?.name}</p>
+            <p className="text-xs text-gray-500">@{currentUser?.username} - {currentUser?.role === 'admin' ? 'Administrator' : 'User'}</p>
+          </div>
+
+          {/* Required Permission Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-blue-900 mb-2">Required Permission:</h4>
+            <div className="flex items-center space-x-2">
+              <SafeIcon icon={FiTrendingUp} className="text-blue-600" />
+              <span className="text-blue-800 font-mono text-sm">upgrade_levels</span>
+            </div>
+            <p className="text-blue-700 text-sm mt-2">
+              This permission is only available to Super Administrators for security reasons.
+            </p>
+          </div>
+
+          {/* Close Button */}
+          <motion.button
+            onClick={onClose}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+          >
+            Close
+          </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
 
   const currentLevel = getCurrentLevel(trainee.points);
   const currentLevelIndex = PROGRESSION_LEVELS.findIndex(level => level.id === currentLevel.id);
@@ -74,7 +157,7 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
 
       // Calculate new points (set to minimum of selected level)
       const newPoints = selectedLevel.minPoints;
-      
+
       onUpgrade(trainee.id, {
         points: newPoints,
         levelUpgrade: {
@@ -134,6 +217,19 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
           </button>
         </div>
 
+        {/* Super Admin Only Notice */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center space-x-2">
+            <SafeIcon icon={FiShield} className="text-purple-600" />
+            <div>
+              <p className="font-medium text-purple-900">Super Admin Function</p>
+              <p className="text-purple-700 text-sm">
+                Level upgrades require Super Administrator privileges for security.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Current Level Info */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex items-center space-x-3">
@@ -164,7 +260,7 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
               {PROGRESSION_LEVELS.map((level, index) => {
                 const isCurrentLevel = level.id === currentLevel.id;
                 const isSelected = selectedLevel?.id === level.id;
-                
+
                 return (
                   <motion.div
                     key={level.id}
@@ -214,8 +310,8 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className={`p-4 rounded-lg border ${
-                isUpgrade 
-                  ? 'bg-green-50 border-green-200' 
+                isUpgrade
+                  ? 'bg-green-50 border-green-200'
                   : 'bg-red-50 border-red-200'
               }`}
             >
@@ -244,10 +340,7 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
             </label>
             <textarea
               value={reason}
-              onChange={(e) => {
-                setReason(e.target.value);
-                setError('');
-              }}
+              onChange={(e) => { setReason(e.target.value); setError(''); }}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
               rows="3"
               placeholder="Explain why this level change is being made..."
@@ -267,10 +360,7 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError('');
-                }}
+                onChange={(e) => { setPassword(e.target.value); setError(''); }}
                 className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                   error ? 'border-red-500' : 'border-gray-300'
                 }`}
@@ -315,14 +405,16 @@ const LevelUpgradeModal = ({ isOpen, onClose, trainee, onUpgrade }) => {
                 <>
                   <SafeIcon icon={FiTrendingUp} />
                   <span>
-                    {selectedLevel && selectedLevel.id !== currentLevel.id 
-                      ? isUpgrade ? 'Upgrade Level' : 'Downgrade Level'
-                      : 'Select Level'
-                    }
+                    {selectedLevel && selectedLevel.id !== currentLevel.id
+                      ? isUpgrade
+                        ? 'Upgrade Level'
+                        : 'Downgrade Level'
+                      : 'Select Level'}
                   </span>
                 </>
               )}
             </motion.button>
+
             <motion.button
               type="button"
               onClick={handleClose}
