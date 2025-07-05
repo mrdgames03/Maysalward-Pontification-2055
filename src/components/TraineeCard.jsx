@@ -227,8 +227,24 @@ Maysalward Training Hub - Professional Development Excellence
 
           {/* Main Content */}
           <div className="flex justify-between items-end">
-            <div className="flex-1">
-              <div className="space-y-2">
+            <div className="flex items-start space-x-4">
+              {/* Profile Photo on Card */}
+              <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/30 bg-white/20 flex-shrink-0">
+                {trainee.photo ? (
+                  <img 
+                    src={trainee.photo} 
+                    alt={trainee.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <SafeIcon icon={FiUser} className="text-white/60 text-xl" />
+                  </div>
+                )}
+              </div>
+
+              {/* Trainee Details */}
+              <div className="flex-1 space-y-2">
                 <div>
                   <p className="text-blue-100 text-xs uppercase tracking-wide">Name</p>
                   <p className="text-lg font-semibold truncate">{trainee.name}</p>

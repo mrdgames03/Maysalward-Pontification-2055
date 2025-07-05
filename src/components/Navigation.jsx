@@ -17,64 +17,19 @@ const Navigation = () => {
 
   // Navigation items based on permissions
   const navItems = [
-    {
-      path: '/dashboard',
-      label: 'Dashboard',
-      icon: FiHome,
-      permission: ['view_all', 'view_trainees', 'view_own_profile']
-    },
-    {
-      path: '/register',
-      label: 'Register',
-      icon: FiUserPlus,
-      permission: ['add_trainees']
-    },
-    {
-      path: '/scanner',
-      label: 'Scanner',
-      icon: FiCamera,
-      permission: ['view_all', 'view_trainees']
-    },
-    {
-      path: '/trainees',
-      label: 'Trainees',
-      icon: FiUsers,
-      permission: ['view_all', 'view_trainees']
-    },
-    {
-      path: '/training-courses',
-      label: 'Courses',
-      icon: FiBook,
-      permission: ['view_all', 'add_courses', 'view_available_courses']
-    },
-    {
-      path: '/instructors',
-      label: 'Instructors',
-      icon: FiUser,
-      permission: ['view_all', 'add_instructors']
-    },
-    {
-      path: '/gifts',
-      label: 'Gifts',
-      icon: FiGift,
-      permission: ['add_gifts']
-    },
-    {
-      path: '/gifts/redeem',
-      label: 'Redeem',
-      icon: FiStar,
-      permission: ['redeem_gifts', 'view_available_gifts']
-    },
-    {
-      path: '/profile',
-      label: 'Profile',
-      icon: FiEye,
-      permission: ['view_own_profile']
-    }
+    { path: '/dashboard', label: 'Dashboard', icon: FiHome, permission: ['view_all', 'view_trainees', 'view_own_profile'] },
+    { path: '/register', label: 'Register', icon: FiUserPlus, permission: ['add_trainees'] },
+    { path: '/scanner', label: 'Scanner', icon: FiCamera, permission: ['view_all', 'view_trainees'] },
+    { path: '/trainees', label: 'Trainees', icon: FiUsers, permission: ['view_all', 'view_trainees'] },
+    { path: '/training-courses', label: 'Courses', icon: FiBook, permission: ['view_all', 'add_courses', 'view_available_courses'] },
+    { path: '/instructors', label: 'Instructors', icon: FiUser, permission: ['view_all', 'add_instructors'] },
+    { path: '/gifts', label: 'Gifts', icon: FiGift, permission: ['add_gifts'] },
+    { path: '/gifts/redeem', label: 'Redeem', icon: FiStar, permission: ['redeem_gifts', 'view_available_gifts'] },
+    { path: '/profile', label: 'Profile', icon: FiEye, permission: ['view_own_profile'] }
   ];
 
   // Filter navigation items based on user permissions
-  const visibleNavItems = navItems.filter(item => 
+  const visibleNavItems = navItems.filter(item =>
     item.permission.some(permission => hasPermission(permission))
   );
 
@@ -88,27 +43,19 @@ const Navigation = () => {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'super_admin':
-        return 'bg-red-100 text-red-800';
-      case 'admin':
-        return 'bg-blue-100 text-blue-800';
-      case 'trainee':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'super_admin': return 'bg-red-100 text-red-800';
+      case 'admin': return 'bg-blue-100 text-blue-800';
+      case 'trainee': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getRoleName = (role) => {
     switch (role) {
-      case 'super_admin':
-        return 'Super Admin';
-      case 'admin':
-        return 'Administrator';
-      case 'trainee':
-        return 'Trainee';
-      default:
-        return 'User';
+      case 'super_admin': return 'Super Admin';
+      case 'admin': return 'Administrator';
+      case 'trainee': return 'Trainee';
+      default: return 'User';
     }
   };
 

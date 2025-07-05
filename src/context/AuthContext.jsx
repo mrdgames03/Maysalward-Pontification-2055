@@ -29,12 +29,27 @@ export const AuthProvider = ({ children }) => {
       role: USER_ROLES.SUPER_ADMIN,
       name: 'Super Administrator',
       permissions: [
-        'view_all', 'add_trainees', 'edit_trainees', 'delete_trainees', 'bulk_delete',
-        'upgrade_levels', 'add_courses', 'edit_courses', 'delete_courses',
-        'add_instructors', 'edit_instructors', 'delete_instructors',
-        'add_gifts', 'edit_gifts', 'delete_gifts', 'view_analytics',
-        'manage_categories', 'manage_locations', 'flag_trainees',
-        'change_password', 'system_settings'
+        'view_all',
+        'add_trainees',
+        'edit_trainees',
+        'delete_trainees',
+        'bulk_delete',
+        'upgrade_levels',
+        'add_courses',
+        'edit_courses',
+        'delete_courses',
+        'add_instructors',
+        'edit_instructors',
+        'delete_instructors',
+        'add_gifts',
+        'edit_gifts',
+        'delete_gifts',
+        'view_analytics',
+        'manage_categories',
+        'manage_locations',
+        'flag_trainees',
+        'change_password',
+        'system_settings'
       ]
     },
     {
@@ -43,9 +58,18 @@ export const AuthProvider = ({ children }) => {
       role: USER_ROLES.ADMIN,
       name: 'Administrator',
       permissions: [
-        'view_trainees', 'add_trainees', 'edit_trainees', 'flag_trainees',
-        'add_courses', 'edit_courses', 'add_instructors', 'edit_instructors',
-        'view_analytics', 'manage_categories', 'manage_locations', 'change_password'
+        'view_trainees',
+        'add_trainees',
+        'edit_trainees',
+        'flag_trainees',
+        'add_courses',
+        'edit_courses',
+        'add_instructors',
+        'edit_instructors',
+        'view_analytics',
+        'manage_categories',
+        'manage_locations',
+        'change_password'
       ]
     },
     {
@@ -54,8 +78,12 @@ export const AuthProvider = ({ children }) => {
       role: USER_ROLES.TRAINEE,
       name: 'Trainee User',
       permissions: [
-        'view_own_profile', 'view_own_progress', 'view_available_courses',
-        'view_available_gifts', 'redeem_gifts', 'change_password'
+        'view_own_profile',
+        'view_own_progress',
+        'view_available_courses',
+        'view_available_gifts',
+        'redeem_gifts',
+        'change_password'
       ]
     }
   ];
@@ -93,7 +121,7 @@ export const AuthProvider = ({ children }) => {
   const createTraineeUser = (traineeData) => {
     const users = getUsers();
     const username = traineeData.email;
-    
+
     // Check if user already exists
     const existingUser = users.find(user => user.username === username);
     if (existingUser) {
@@ -108,8 +136,12 @@ export const AuthProvider = ({ children }) => {
       name: traineeData.name,
       traineeId: traineeData.id,
       permissions: [
-        'view_own_profile', 'view_own_progress', 'view_available_courses',
-        'view_available_gifts', 'redeem_gifts', 'change_password'
+        'view_own_profile',
+        'view_own_progress',
+        'view_available_courses',
+        'view_available_gifts',
+        'redeem_gifts',
+        'change_password'
       ]
     };
 
@@ -122,7 +154,7 @@ export const AuthProvider = ({ children }) => {
   const updateTraineeUser = (traineeData) => {
     const users = getUsers();
     const userIndex = users.findIndex(user => user.traineeId === traineeData.id);
-    
+
     if (userIndex !== -1) {
       // Update existing user
       users[userIndex] = {
@@ -133,7 +165,6 @@ export const AuthProvider = ({ children }) => {
       updateUsers(users);
       return users[userIndex];
     }
-    
     return null;
   };
 
@@ -148,6 +179,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = () => {
       const authData = localStorage.getItem(AUTH_KEY);
+      
       if (authData) {
         try {
           const { timestamp, authenticated, user } = JSON.parse(authData);
@@ -170,6 +202,7 @@ export const AuthProvider = ({ children }) => {
           setCurrentUser(null);
         }
       }
+      
       setIsLoading(false);
     };
 
@@ -178,6 +211,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = (username, password) => {
     const user = getUserByUsername(username);
+    
     if (user && user.password === password) {
       const authData = {
         authenticated: true,
@@ -194,6 +228,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
       setIsAuthenticated(true);
       setCurrentUser(authData.user);
+
       return { success: true };
     } else {
       return { success: false, error: 'Invalid username or password' };
@@ -233,6 +268,7 @@ export const AuthProvider = ({ children }) => {
 
       // Force logout to require login with new password
       logout();
+
       return { success: true, message: 'Password changed successfully. Please log in with your new password.' };
     } catch (error) {
       return { success: false, error: 'Failed to change password. Please try again.' };
