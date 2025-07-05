@@ -4,16 +4,18 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useAuth } from '../context/AuthContext';
 
-const { FiLock, FiEye, FiEyeOff, FiLogIn, FiShield, FiRefreshCw } = FiIcons;
+const { FiLock, FiEye, FiEyeOff, FiLogIn, FiShield, FiRefreshCw, FiUser } = FiIcons;
 
 const LoginScreen = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetUsername, setResetUsername] = useState('');
 
-  const { login, resetPassword, getCurrentPassword } = useAuth();
+  const { login, resetPassword } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +25,7 @@ const LoginScreen = () => {
     // Simulate a small delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // 🔐 LOGIN ATTEMPT
-    const result = login(password);
+    const result = login(username, password);
     if (!result.success) {
       setError(result.error);
       setPassword(''); // Clear password field on error
@@ -40,19 +41,54 @@ const LoginScreen = () => {
     }
   };
 
-  const handleResetPassword = () => {
-    const result = resetPassword();
-    if (result.success) {
-      setError('');
-      setShowResetConfirm(false);
-      setPassword('');
-      // Show success message briefly
-      setError('Password reset to default (1234). Please log in.');
-      setTimeout(() => setError(''), 3000);
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
+    if (error) {
+      setError(''); // Clear error when user starts typing
     }
   };
 
-  const passwordType = getCurrentPassword();
+  const handleResetPassword = () => {
+    if (!resetUsername.trim()) {
+      setError('Please enter a username to reset');
+      return;
+    }
+
+    const result = resetPassword(resetUsername);
+    if (result.success) {
+      setError('');
+      setShowResetConfirm(false);
+      setResetUsername('');
+      setUsername('');
+      setPassword('');
+      // Show success message briefly
+      setError('Password reset to default (12345). Please log in.');
+      setTimeout(() => setError(''), 3000);
+    } else {
+      setError(result.error);
+    }
+  };
+
+  const userRoles = [
+    {
+      username: 'sadmin',
+      role: 'Super Admin',
+      description: 'Full system access',
+      color: 'bg-red-100 text-red-800'
+    },
+    {
+      username: 'admin',
+      role: 'Admin',
+      description: 'Manage courses & trainees',
+      color: 'bg-blue-100 text-blue-800'
+    },
+    {
+      username: 'trainee',
+      role: 'Trainee',
+      description: 'View progress & courses',
+      color: 'bg-green-100 text-green-800'
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -90,26 +126,68 @@ const LoginScreen = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Maysalward Training Hub
             </h1>
-            <p className="text-gray-600">Secure Access Required</p>
-            
-            {/* Password Status Indicator */}
-            <div className="mt-3 inline-flex items-center space-x-2 px-3 py-1 bg-blue-50 rounded-full">
-              <SafeIcon icon={FiShield} className="text-blue-600 text-sm" />
-              <span className="text-blue-800 text-sm font-medium">
-                {passwordType} Password
-              </span>
-            </div>
+            <p className="text-gray-600">Multi-Level Access System</p>
           </motion.div>
         </div>
+
+        {/* User Roles Info */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6 p-4 bg-gray-50 rounded-lg"
+        >
+          <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
+            <SafeIcon icon={FiUser} className="text-gray-500" />
+            <span>Available Access Levels</span>
+          </h3>
+          <div className="space-y-2">
+            {userRoles.map((role) => (
+              <div key={role.username} className="flex items-center justify-between">
+                <div>
+                  <span className="font-mono text-sm text-gray-900">{role.username}</span>
+                  <span className="text-gray-500 text-xs ml-2">{role.description}</span>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${role.color}`}>
+                  {role.role}
+                </span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Login Form */}
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.5 }}
           onSubmit={handleSubmit}
           className="space-y-6"
         >
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Username
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <SafeIcon icon={FiUser} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={username}
+                onChange={handleUsernameChange}
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  error ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter username"
+                required
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -125,9 +203,8 @@ const LoginScreen = () => {
                 className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                   error ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Enter system password"
+                placeholder="Enter password"
                 required
-                autoFocus
               />
               <button
                 type="button"
@@ -154,7 +231,7 @@ const LoginScreen = () => {
 
           <motion.button
             type="submit"
-            disabled={isLoading || !password}
+            disabled={isLoading || !username || !password}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg"
@@ -187,19 +264,27 @@ const LoginScreen = () => {
             </button>
           ) : (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-sm text-yellow-800 mb-3">
-                  This will reset the password to default (1234). Are you sure?
-                </p>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={resetUsername}
+                  onChange={(e) => setResetUsername(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                  placeholder="Enter username to reset"
+                />
                 <div className="flex space-x-2">
                   <button
                     onClick={handleResetPassword}
                     className="flex-1 bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700 transition-colors"
                   >
-                    Yes, Reset
+                    Reset Password
                   </button>
                   <button
-                    onClick={() => setShowResetConfirm(false)}
+                    onClick={() => {
+                      setShowResetConfirm(false);
+                      setResetUsername('');
+                      setError('');
+                    }}
                     className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-200 transition-colors"
                   >
                     Cancel
@@ -214,16 +299,16 @@ const LoginScreen = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.7 }}
           className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg"
         >
           <div className="flex items-start space-x-2">
             <SafeIcon icon={FiShield} className="text-blue-600 text-sm mt-0.5" />
             <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">Secure Access</p>
+              <p className="font-medium mb-1">Multi-Level Access</p>
               <p className="text-blue-700">
-                This system is protected to ensure trainee data security and privacy.
-                You can change your password after logging in.
+                Different access levels provide appropriate permissions for each user type. 
+                Default password: 12345 (changeable after login)
               </p>
             </div>
           </div>
@@ -237,7 +322,7 @@ const LoginScreen = () => {
           className="mt-8 text-center text-sm text-gray-500"
         >
           <p>© 2024 Maysalward Training Hub</p>
-          <p>Authorized Access Only</p>
+          <p>Role-Based Access Control System</p>
         </motion.div>
       </motion.div>
     </div>

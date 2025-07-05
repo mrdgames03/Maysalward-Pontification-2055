@@ -6,29 +6,109 @@ import SafeIcon from '../common/SafeIcon';
 import { useAuth } from '../context/AuthContext';
 import ChangePasswordModal from './ChangePasswordModal';
 
-const { FiHome, FiUserPlus, FiCamera, FiUsers, FiMenu, FiX, FiLogOut, FiBook, FiUser, FiSettings, FiShield } = FiIcons;
+const { FiHome, FiUserPlus, FiCamera, FiUsers, FiMenu, FiX, FiLogOut, FiBook, FiUser, FiSettings, FiShield, FiGift, FiEye, FiStar } = FiIcons;
 
 const Navigation = () => {
   const location = useLocation();
-  const { logout, getCurrentPassword } = useAuth();
+  const { logout, currentUser, hasPermission } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  // Navigation items based on permissions
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: FiHome },
-    { path: '/register', label: 'Register', icon: FiUserPlus },
-    { path: '/scanner', label: 'Scanner', icon: FiCamera },
-    { path: '/trainees', label: 'Trainees', icon: FiUsers },
-    { path: '/training-courses', label: 'Courses', icon: FiBook },
-    { path: '/instructors', label: 'Instructors', icon: FiUser }
+    {
+      path: '/dashboard',
+      label: 'Dashboard',
+      icon: FiHome,
+      permission: ['view_all', 'view_trainees', 'view_own_profile']
+    },
+    {
+      path: '/register',
+      label: 'Register',
+      icon: FiUserPlus,
+      permission: ['add_trainees']
+    },
+    {
+      path: '/scanner',
+      label: 'Scanner',
+      icon: FiCamera,
+      permission: ['view_all', 'view_trainees']
+    },
+    {
+      path: '/trainees',
+      label: 'Trainees',
+      icon: FiUsers,
+      permission: ['view_all', 'view_trainees']
+    },
+    {
+      path: '/training-courses',
+      label: 'Courses',
+      icon: FiBook,
+      permission: ['view_all', 'add_courses', 'view_available_courses']
+    },
+    {
+      path: '/instructors',
+      label: 'Instructors',
+      icon: FiUser,
+      permission: ['view_all', 'add_instructors']
+    },
+    {
+      path: '/gifts',
+      label: 'Gifts',
+      icon: FiGift,
+      permission: ['add_gifts']
+    },
+    {
+      path: '/gifts/redeem',
+      label: 'Redeem',
+      icon: FiStar,
+      permission: ['redeem_gifts', 'view_available_gifts']
+    },
+    {
+      path: '/profile',
+      label: 'Profile',
+      icon: FiEye,
+      permission: ['view_own_profile']
+    }
   ];
+
+  // Filter navigation items based on user permissions
+  const visibleNavItems = navItems.filter(item => 
+    item.permission.some(permission => hasPermission(permission))
+  );
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       logout();
+    }
+  };
+
+  const getRoleColor = (role) => {
+    switch (role) {
+      case 'super_admin':
+        return 'bg-red-100 text-red-800';
+      case 'admin':
+        return 'bg-blue-100 text-blue-800';
+      case 'trainee':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getRoleName = (role) => {
+    switch (role) {
+      case 'super_admin':
+        return 'Super Admin';
+      case 'admin':
+        return 'Administrator';
+      case 'trainee':
+        return 'Trainee';
+      default:
+        return 'User';
     }
   };
 
@@ -58,7 +138,7 @@ const Navigation = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
               <div className="flex space-x-1">
-                {navItems.map((item) => (
+                {visibleNavItems.map((item) => (
                   <Link key={item.path} to={item.path} className="relative">
                     <motion.div
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
@@ -89,10 +169,10 @@ const Navigation = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center space-x-2"
-                  title="Admin Menu"
+                  title="User Menu"
                 >
                   <SafeIcon icon={FiShield} className="text-lg" />
-                  <span className="text-sm font-medium">Admin</span>
+                  <span className="text-sm font-medium">{currentUser?.name}</span>
                 </motion.button>
 
                 {/* User Dropdown */}
@@ -103,30 +183,33 @@ const Navigation = () => {
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
                   >
-                    {/* Password Status */}
+                    {/* User Info */}
                     <div className="px-4 py-2 border-b border-gray-100">
                       <div className="flex items-center space-x-2">
                         <SafeIcon icon={FiShield} className="text-blue-600" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Admin Account</p>
-                          <p className="text-xs text-gray-600">
-                            Password: {getCurrentPassword()}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900">{currentUser?.name}</p>
+                          <p className="text-xs text-gray-600">@{currentUser?.username}</p>
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getRoleColor(currentUser?.role)}`}>
+                            {getRoleName(currentUser?.role)}
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     {/* Menu Items */}
-                    <button
-                      onClick={() => {
-                        setShowPasswordModal(true);
-                        setShowUserMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
-                    >
-                      <SafeIcon icon={FiSettings} className="text-gray-400" />
-                      <span className="text-sm">Change Password</span>
-                    </button>
+                    {hasPermission('change_password') && (
+                      <button
+                        onClick={() => {
+                          setShowPasswordModal(true);
+                          setShowUserMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                      >
+                        <SafeIcon icon={FiSettings} className="text-gray-400" />
+                        <span className="text-sm">Change Password</span>
+                      </button>
+                    )}
 
                     <div className="border-t border-gray-100 mt-2 pt-2">
                       <button
@@ -147,13 +230,15 @@ const Navigation = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
-              <button
-                onClick={() => setShowPasswordModal(true)}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Change Password"
-              >
-                <SafeIcon icon={FiSettings} className="text-lg" />
-              </button>
+              {hasPermission('change_password') && (
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Change Password"
+                >
+                  <SafeIcon icon={FiSettings} className="text-lg" />
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -178,7 +263,7 @@ const Navigation = () => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-gray-200 py-4"
             >
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -194,25 +279,30 @@ const Navigation = () => {
                 </Link>
               ))}
 
-              {/* Mobile Admin Section */}
+              {/* Mobile User Section */}
               <div className="mx-2 mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-center space-x-2 px-4 py-2 text-gray-600">
                   <SafeIcon icon={FiShield} className="text-blue-600" />
                   <div>
-                    <p className="text-sm font-medium">Admin Account</p>
-                    <p className="text-xs">Password: {getCurrentPassword()}</p>
+                    <p className="text-sm font-medium">{currentUser?.name}</p>
+                    <p className="text-xs">@{currentUser?.username}</p>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getRoleColor(currentUser?.role)}`}>
+                      {getRoleName(currentUser?.role)}
+                    </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setShowPasswordModal(true);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg mx-0 mb-1 text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors"
-                >
-                  <SafeIcon icon={FiSettings} className="text-lg" />
-                  <span className="font-medium">Change Password</span>
-                </button>
+                {hasPermission('change_password') && (
+                  <button
+                    onClick={() => {
+                      setShowPasswordModal(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg mx-0 mb-1 text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <SafeIcon icon={FiSettings} className="text-lg" />
+                    <span className="font-medium">Change Password</span>
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
@@ -220,10 +310,7 @@ const Navigation = () => {
 
         {/* Click outside to close user menu */}
         {showUserMenu && (
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowUserMenu(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
         )}
       </nav>
 

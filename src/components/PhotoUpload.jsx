@@ -3,14 +3,13 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 
-const { FiCamera, FiUpload, FiX, FiUser, FiVideo, FiVideoOff, FiRotateCcw } = FiIcons;
+const { FiCamera, FiUpload, FiX, FiUser, FiVideo, FiVideoOff, FiRotateCcw, FiGift } = FiIcons;
 
 const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" }) => {
   const [dragOver, setDragOver] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [isCameraActive, setIsCameraActive] = useState(false);
-  
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -73,15 +72,15 @@ const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" })
     try {
       setCameraError('');
       setShowCamera(true);
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           width: { ideal: 640 },
           height: { ideal: 480 },
           facingMode: 'user'
-        } 
+        }
       });
-      
+
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -109,13 +108,13 @@ const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" })
     if (videoRef.current && canvasRef.current) {
       const canvas = canvasRef.current;
       const video = videoRef.current;
-      
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
+
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       const dataURL = canvas.toDataURL('image/jpeg', 0.8);
       onPhotoChange(dataURL);
       stopCamera();
@@ -127,12 +126,30 @@ const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" })
     startCamera();
   };
 
+  const getPlaceholderIcon = () => {
+    switch (type) {
+      case 'instructor': return FiUser;
+      case 'gift': return FiGift;
+      case 'trainee':
+      default: return FiUser;
+    }
+  };
+
+  const getPlaceholderText = () => {
+    switch (type) {
+      case 'instructor': return 'Instructor Photo';
+      case 'gift': return 'Gift Photo';
+      case 'trainee':
+      default: return 'Profile Photo';
+    }
+  };
+
   return (
     <div className={className}>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        {type === 'instructor' ? 'Instructor Photo' : 'Profile Photo'}
+        {getPlaceholderText()}
       </label>
-      
+
       <div className="relative">
         {photo && !showCamera ? (
           <motion.div
@@ -141,10 +158,10 @@ const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" })
             className="relative"
           >
             <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-300 mx-auto">
-              <img 
-                src={photo} 
-                alt={type === 'instructor' ? 'Instructor' : 'Profile'} 
-                className="w-full h-full object-cover" 
+              <img
+                src={photo}
+                alt={getPlaceholderText()}
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="flex justify-center space-x-2 mt-2">
@@ -197,7 +214,7 @@ const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" })
                   </div>
                 )}
               </div>
-              
+
               {cameraError ? (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-800 text-sm">{cameraError}</p>
@@ -289,7 +306,7 @@ const PhotoUpload = ({ photo, onPhotoChange, className = "", type = "trainee" })
         onChange={handleFileChange}
         className="hidden"
       />
-      
+
       <p className="text-xs text-gray-500 mt-2 text-center">
         Recommended: Square image, max 5MB
       </p>

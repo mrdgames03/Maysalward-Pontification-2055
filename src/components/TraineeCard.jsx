@@ -1,27 +1,30 @@
-import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
+import React,{useRef} from 'react';
+import {motion} from 'framer-motion';
+import {format} from 'date-fns';
 import QRCode from 'qrcode';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import ProgressionBadge from './ProgressionBadge';
+import ProgressionProgress from './ProgressionProgress';
+import { getCurrentLevel } from '../utils/progressionSystem';
 
-const { FiDownload, FiMail, FiUser, FiCalendar, FiHash, FiStar } = FiIcons;
+const {FiDownload,FiMail,FiUser,FiCalendar,FiHash,FiStar}=FiIcons;
 
-const TraineeCard = ({ trainee, showActions = false }) => {
-  const cardRef = useRef(null);
-  const [qrCodeUrl, setQrCodeUrl] = React.useState('');
+const TraineeCard=({trainee,showActions=false})=> {
+  const cardRef=useRef(null);
+  const [qrCodeUrl,setQrCodeUrl]=React.useState('');
 
-  React.useEffect(() => {
-    const generateQRCode = async () => {
+  React.useEffect(()=> {
+    const generateQRCode=async ()=> {
       try {
-        const qrData = JSON.stringify({
+        const qrData=JSON.stringify({
           serialNumber: trainee.serialNumber,
           name: trainee.name,
           id: trainee.id
         });
-        const url = await QRCode.toDataURL(qrData, {
+        const url=await QRCode.toDataURL(qrData,{
           width: 200,
           margin: 2,
           color: {
@@ -31,40 +34,40 @@ const TraineeCard = ({ trainee, showActions = false }) => {
         });
         setQrCodeUrl(url);
       } catch (error) {
-        console.error('Error generating QR code:', error);
+        console.error('Error generating QR code:',error);
       }
     };
-
     generateQRCode();
-  }, [trainee]);
+  },[trainee]);
 
-  const downloadCard = async () => {
+  const downloadCard=async ()=> {
     if (!cardRef.current) return;
-
+    
     try {
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas=await html2canvas(cardRef.current,{
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true
       });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
+      
+      const imgData=canvas.toDataURL('image/png');
+      const pdf=new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
-        format: [85.6, 53.98] // Credit card size
+        format: [85.6,53.98] // Credit card size
       });
-
-      pdf.addImage(imgData, 'PNG', 0, 0, 85.6, 53.98);
+      
+      pdf.addImage(imgData,'PNG',0,0,85.6,53.98);
       pdf.save(`${trainee.name}-trainee-card.pdf`);
     } catch (error) {
-      console.error('Error downloading card:', error);
+      console.error('Error downloading card:',error);
     }
   };
 
-  const shareByEmail = () => {
-    const subject = `Trainee Card - ${trainee.name}`;
-    const body = `
+  const shareByEmail=()=> {
+    const level = getCurrentLevel(trainee.points);
+    const subject=`Trainee Card - ${trainee.name}`;
+    const body=`
 Dear ${trainee.name},
 
 Congratulations! You have been successfully registered in our training program at Maysalward Training Hub.
@@ -72,28 +75,34 @@ Congratulations! You have been successfully registered in our training program a
 Your Details:
 - Name: ${trainee.name}
 - Serial Number: ${trainee.serialNumber}
-- Registration Date: ${format(new Date(trainee.registrationDate), 'PPP')}
+- Registration Date: ${format(new Date(trainee.registrationDate),'PPP')}
+- Current Level: ${level.emoji} ${level.name}
+- Points: ${trainee.points}
+
+${level.description}
 
 Please keep your trainee card safe and present it during check-ins.
 
 Best regards,
 Maysalward Training Hub Team
     `;
-
-    const mailtoUrl = `mailto:${trainee.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    const mailtoUrl=`mailto:${trainee.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl);
   };
+
+  const currentLevel = getCurrentLevel(trainee.points);
 
   return (
     <div className="space-y-4">
       {/* Digital Card */}
-      <motion.div
+      <motion.div 
         ref={cardRef}
-        initial={{ opacity: 0, rotateY: -90 }}
-        animate={{ opacity: 1, rotateY: 0 }}
-        transition={{ duration: 0.6 }}
+        initial={{opacity: 0,rotateY: -90}}
+        animate={{opacity: 1,rotateY: 0}}
+        transition={{duration: 0.6}}
         className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl p-6 text-white shadow-2xl relative overflow-hidden"
-        style={{ width: '400px', height: '250px', margin: '0 auto' }}
+        style={{width: '400px',height: '250px',margin: '0 auto'}}
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -106,14 +115,11 @@ Maysalward Training Hub Team
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center p-2">
-                <img
-                  src="/logo.png"
-                  alt="Maysalward Logo"
+                <img 
+                  src="/logo.png" 
+                  alt="Maysalward Logo" 
                   className="w-full h-full object-contain"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
+                  onError={(e)=> {e.target.style.display='none';e.target.nextSibling.style.display='flex';}}
                 />
                 <SafeIcon icon={FiUser} className="text-xl hidden" />
               </div>
@@ -122,20 +128,14 @@ Maysalward Training Hub Team
                 <p className="text-blue-100 text-sm">Maysalward Training Hub</p>
               </div>
             </div>
-            
-            {/* Profile Photo */}
-            <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/20 border-2 border-white/30">
-              {trainee.photo ? (
-                <img 
-                  src={trainee.photo} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover" 
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <SafeIcon icon={FiUser} className="text-white/60 text-xl" />
-                </div>
-              )}
+
+            {/* Level Badge on Card */}
+            <div className="flex items-center space-x-2 bg-white/20 rounded-lg px-3 py-1">
+              <span className="text-lg">{currentLevel.emoji}</span>
+              <div>
+                <p className="text-xs font-medium text-blue-100">Level</p>
+                <p className="text-sm font-bold">{currentLevel.name}</p>
+              </div>
             </div>
           </div>
 
@@ -147,13 +147,19 @@ Maysalward Training Hub Team
                   <p className="text-blue-100 text-xs uppercase tracking-wide">Name</p>
                   <p className="text-lg font-semibold truncate">{trainee.name}</p>
                 </div>
-                <div>
-                  <p className="text-blue-100 text-xs uppercase tracking-wide">Serial Number</p>
-                  <p className="text-sm font-mono">{trainee.serialNumber}</p>
+                <div className="flex space-x-4">
+                  <div>
+                    <p className="text-blue-100 text-xs uppercase tracking-wide">Serial</p>
+                    <p className="text-sm font-mono">{trainee.serialNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-blue-100 text-xs uppercase tracking-wide">Points</p>
+                    <p className="text-sm font-bold">{trainee.points}</p>
+                  </div>
                 </div>
                 <div>
                   <p className="text-blue-100 text-xs uppercase tracking-wide">Registered</p>
-                  <p className="text-sm">{format(new Date(trainee.registrationDate), 'MMM dd, yyyy')}</p>
+                  <p className="text-sm">{format(new Date(trainee.registrationDate),'MMM dd,yyyy')}</p>
                 </div>
               </div>
             </div>
@@ -172,17 +178,13 @@ Maysalward Training Hub Team
 
       {/* Trainee Info */}
       <div className="bg-white rounded-lg p-6 shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
             {/* Profile Photo in Info Section */}
             {trainee.photo && (
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
-                  <img 
-                    src={trainee.photo} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover" 
-                  />
+                  <img src={trainee.photo} alt="Profile" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Profile Photo</p>
@@ -190,6 +192,14 @@ Maysalward Training Hub Team
                 </div>
               </div>
             )}
+
+            {/* Progression Badge and Progress */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <ProgressionBadge points={trainee.points} size="lg" showLabel={true} />
+              </div>
+              <ProgressionProgress points={trainee.points} showDetails={true} />
+            </div>
 
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiUser} className="text-gray-400" />
@@ -211,12 +221,12 @@ Maysalward Training Hub Team
               <SafeIcon icon={FiCalendar} className="text-gray-400" />
               <div>
                 <p className="text-sm text-gray-600">Date of Birth</p>
-                <p className="font-medium">{format(new Date(trainee.dateOfBirth), 'PPP')}</p>
+                <p className="font-medium">{format(new Date(trainee.dateOfBirth),'PPP')}</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <SafeIcon icon={FiMail} className="text-gray-400" />
               <div>
@@ -237,6 +247,22 @@ Maysalward Training Hub Team
               <p className="text-sm text-gray-600 mb-1">Education</p>
               <p className="text-sm bg-gray-50 p-2 rounded">{trainee.education}</p>
             </div>
+
+            {/* Level Perks Preview */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Current Level Perks:</h4>
+              <ul className="text-xs text-gray-600 space-y-1">
+                {currentLevel.perks.slice(0, 3).map((perk, index) => (
+                  <li key={index} className="flex items-start space-x-1">
+                    <SafeIcon icon={FiStar} className="text-yellow-500 text-xs mt-0.5 flex-shrink-0" />
+                    <span>{perk}</span>
+                  </li>
+                ))}
+                {currentLevel.perks.length > 3 && (
+                  <li className="text-gray-500">+{currentLevel.perks.length - 3} more perks</li>
+                )}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -244,19 +270,20 @@ Maysalward Training Hub Team
       {/* Action Buttons */}
       {showActions && (
         <div className="flex flex-col sm:flex-row gap-3">
-          <motion.button
+          <motion.button 
             onClick={downloadCard}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{scale: 1.02}}
+            whileTap={{scale: 0.98}}
             className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
           >
             <SafeIcon icon={FiDownload} />
             <span>Download Card</span>
           </motion.button>
-          <motion.button
+          
+          <motion.button 
             onClick={shareByEmail}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{scale: 1.02}}
+            whileTap={{scale: 0.98}}
             className="flex-1 bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
           >
             <SafeIcon icon={FiMail} />
