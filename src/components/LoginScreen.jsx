@@ -4,14 +4,16 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useAuth } from '../context/AuthContext';
 
-const { FiLock, FiEye, FiEyeOff, FiLogIn, FiShield } = FiIcons;
+const { FiLock, FiEye, FiEyeOff, FiLogIn, FiShield, FiRefreshCw } = FiIcons;
 
 const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const { login, resetPassword, getCurrentPassword } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,12 +23,13 @@ const LoginScreen = () => {
     // Simulate a small delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // 🔐 LOGIN ATTEMPT - Will check against "1234"
+    // 🔐 LOGIN ATTEMPT
     const result = login(password);
     if (!result.success) {
       setError(result.error);
       setPassword(''); // Clear password field on error
     }
+
     setIsLoading(false);
   };
 
@@ -36,6 +39,20 @@ const LoginScreen = () => {
       setError(''); // Clear error when user starts typing
     }
   };
+
+  const handleResetPassword = () => {
+    const result = resetPassword();
+    if (result.success) {
+      setError('');
+      setShowResetConfirm(false);
+      setPassword('');
+      // Show success message briefly
+      setError('Password reset to default (1234). Please log in.');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const passwordType = getCurrentPassword();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -64,6 +81,7 @@ const LoginScreen = () => {
             />
             <SafeIcon icon={FiShield} className="text-white text-2xl hidden" />
           </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -72,9 +90,15 @@ const LoginScreen = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Maysalward Training Hub
             </h1>
-            <p className="text-gray-600">
-              Secure Access Required
-            </p>
+            <p className="text-gray-600">Secure Access Required</p>
+            
+            {/* Password Status Indicator */}
+            <div className="mt-3 inline-flex items-center space-x-2 px-3 py-1 bg-blue-50 rounded-full">
+              <SafeIcon icon={FiShield} className="text-blue-600 text-sm" />
+              <span className="text-blue-800 text-sm font-medium">
+                {passwordType} Password
+              </span>
+            </div>
           </motion.div>
         </div>
 
@@ -118,7 +142,9 @@ const LoginScreen = () => {
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm text-red-600 flex items-center space-x-1"
+                className={`mt-2 text-sm flex items-center space-x-1 ${
+                  error.includes('reset') ? 'text-green-600' : 'text-red-600'
+                }`}
               >
                 <SafeIcon icon={FiLock} className="text-xs" />
                 <span>{error}</span>
@@ -144,6 +170,46 @@ const LoginScreen = () => {
           </motion.button>
         </motion.form>
 
+        {/* Password Reset Option */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-6"
+        >
+          {!showResetConfirm ? (
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="w-full text-center text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-center space-x-2"
+            >
+              <SafeIcon icon={FiRefreshCw} className="text-xs" />
+              <span>Forgot password? Reset to default</span>
+            </button>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="text-center">
+                <p className="text-sm text-yellow-800 mb-3">
+                  This will reset the password to default (1234). Are you sure?
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleResetPassword}
+                    className="flex-1 bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700 transition-colors"
+                  >
+                    Yes, Reset
+                  </button>
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
         {/* Security Notice */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -157,6 +223,7 @@ const LoginScreen = () => {
               <p className="font-medium mb-1">Secure Access</p>
               <p className="text-blue-700">
                 This system is protected to ensure trainee data security and privacy.
+                You can change your password after logging in.
               </p>
             </div>
           </div>

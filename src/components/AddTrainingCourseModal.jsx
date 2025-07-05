@@ -13,11 +13,12 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
     addCourseCategory, 
     addLocation, 
     updateCourseCategory, 
-    updateLocation 
+    updateLocation,
+    instructors 
   } = useTrainee();
-
+  
   const isEditMode = !!courseToEdit;
-
+  
   const [formData, setFormData] = useState({
     title: courseToEdit?.title || '',
     description: courseToEdit?.description || '',
@@ -97,11 +98,17 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
@@ -238,7 +245,7 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
         materials: ''
       });
     }
-    
+
     setErrors({});
     setShowCustomCategory(false);
     setShowCustomLocation(false);
@@ -323,7 +330,6 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
                     ))}
                     <option value="custom">+ Add New Category</option>
                   </select>
-                  
                   {/* Quick Edit Categories */}
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Quick Edit: </span>
@@ -513,6 +519,7 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
 
           {/* Instructor, Location, and Points */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Instructor Dropdown */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Instructor
@@ -521,15 +528,25 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <SafeIcon icon={FiUser} className="text-gray-400" />
                 </div>
-                <input
-                  type="text"
+                <select
                   name="instructor"
                   value={formData.instructor}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Instructor name"
-                />
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                >
+                  <option value="">Select instructor</option>
+                  {instructors.map(instructor => (
+                    <option key={instructor.id} value={instructor.name}>
+                      {instructor.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+              {instructors.length === 0 && (
+                <p className="mt-1 text-xs text-gray-500">
+                  No instructors registered. Add instructors first.
+                </p>
+              )}
             </div>
 
             {/* Location with Inline Management */}
@@ -557,7 +574,6 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
                       <option value="custom">+ Add New Location</option>
                     </select>
                   </div>
-                  
                   {/* Quick Edit Locations */}
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Quick Edit: </span>
@@ -673,7 +689,6 @@ const AddTrainingCourseModal = ({ isOpen, onClose, onSave, courseToEdit = null }
               <SafeIcon icon={FiSave} />
               <span>{isEditMode ? 'Update Course' : 'Create Training Course'}</span>
             </motion.button>
-
             <motion.button
               type="button"
               onClick={onClose}

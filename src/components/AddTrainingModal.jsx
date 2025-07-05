@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { useTrainee } from '../context/TraineeContext';
 
-const { FiX, FiSave, FiClock, FiBook, FiCalendar, FiStar } = FiIcons;
+const { FiX, FiSave, FiClock, FiBook, FiCalendar, FiStar, FiMapPin, FiUser } = FiIcons;
 
 const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
+  const { instructors, locations } = useTrainee();
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -13,7 +16,7 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
     endTime: '',
     date: new Date().toISOString().split('T')[0],
     points: 20,
-    location: '',
+    location: locations[0] || '',
     instructor: ''
   });
 
@@ -41,7 +44,6 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
     if (formData.startTime && formData.endTime) {
       const start = new Date(`${formData.date}T${formData.startTime}`);
       const end = new Date(`${formData.date}T${formData.endTime}`);
-      
       if (end <= start) {
         newErrors.endTime = 'End time must be after start time';
       }
@@ -57,17 +59,22 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
@@ -80,7 +87,7 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
     };
 
     onSave(trainingData);
-    
+
     // Reset form
     setFormData({
       title: '',
@@ -89,7 +96,7 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
       endTime: '',
       date: new Date().toISOString().split('T')[0],
       points: 20,
-      location: '',
+      location: locations[0] || '',
       instructor: ''
     });
     setErrors({});
@@ -233,34 +240,61 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
             />
           </div>
 
-          {/* Additional Details */}
+          {/* Location and Instructor */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Location Dropdown */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location
               </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Training location"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <SafeIcon icon={FiMapPin} className="text-gray-400" />
+                </div>
+                <select
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                >
+                  <option value="">Select location</option>
+                  {locations.map(location => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
+            {/* Instructor Dropdown */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Instructor
               </label>
-              <input
-                type="text"
-                name="instructor"
-                value={formData.instructor}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Instructor name"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <SafeIcon icon={FiUser} className="text-gray-400" />
+                </div>
+                <select
+                  name="instructor"
+                  value={formData.instructor}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                >
+                  <option value="">Select instructor</option>
+                  {instructors.map(instructor => (
+                    <option key={instructor.id} value={instructor.name}>
+                      {instructor.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {instructors.length === 0 && (
+                <p className="mt-1 text-xs text-gray-500">
+                  No instructors registered. Add instructors first.
+                </p>
+              )}
             </div>
           </div>
 
@@ -302,7 +336,6 @@ const AddTrainingModal = ({ isOpen, onClose, onSave, trainee }) => {
               <SafeIcon icon={FiSave} />
               <span>Schedule Training</span>
             </motion.button>
-            
             <motion.button
               type="button"
               onClick={onClose}

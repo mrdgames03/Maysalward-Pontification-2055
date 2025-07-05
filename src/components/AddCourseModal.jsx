@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { useTrainee } from '../context/TraineeContext';
 
 const { FiX, FiSave, FiBook, FiCalendar, FiUser, FiStar, FiClock } = FiIcons;
 
 const AddCourseModal = ({ isOpen, onClose, onSave, trainee }) => {
+  const { instructors } = useTrainee();
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -178,6 +181,7 @@ const AddCourseModal = ({ isOpen, onClose, onSave, trainee }) => {
                 ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Duration
@@ -222,6 +226,7 @@ const AddCourseModal = ({ isOpen, onClose, onSave, trainee }) => {
                 <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 End Date *
@@ -263,6 +268,7 @@ const AddCourseModal = ({ isOpen, onClose, onSave, trainee }) => {
 
           {/* Instructor and Points */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Instructor Dropdown */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Instructor
@@ -271,16 +277,27 @@ const AddCourseModal = ({ isOpen, onClose, onSave, trainee }) => {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <SafeIcon icon={FiUser} className="text-gray-400" />
                 </div>
-                <input
-                  type="text"
+                <select
                   name="instructor"
                   value={formData.instructor}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Instructor name"
-                />
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                >
+                  <option value="">Select instructor</option>
+                  {instructors.map(instructor => (
+                    <option key={instructor.id} value={instructor.name}>
+                      {instructor.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+              {instructors.length === 0 && (
+                <p className="mt-1 text-xs text-gray-500">
+                  No instructors registered. Add instructors first.
+                </p>
+              )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Completion Points

@@ -4,15 +4,19 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useTrainee } from '../context/TraineeContext';
+import { useAuth } from '../context/AuthContext';
 import StatCard from '../components/StatCard';
 import RecentActivity from '../components/RecentActivity';
 import EducationManagementModal from '../components/EducationManagementModal';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
-const { FiUsers, FiUserCheck, FiScan, FiFlag, FiTrendingUp, FiActivity, FiBook, FiAward, FiSettings, FiUser } = FiIcons;
+const { FiUsers, FiUserCheck, FiScan, FiFlag, FiTrendingUp, FiActivity, FiBook, FiAward, FiSettings, FiUser, FiShield } = FiIcons;
 
 const Dashboard = () => {
   const { getTraineeStats, checkIns, trainees, trainingSessions, courses } = useTrainee();
+  const { getCurrentPassword } = useAuth();
   const [showEducationModal, setShowEducationModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const stats = getTraineeStats();
 
@@ -53,7 +57,7 @@ const Dashboard = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center"
+        className="flex justify-between items-start"
       >
         <div className="text-center flex-1">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -63,8 +67,25 @@ const Dashboard = () => {
             Manage your trainees efficiently with our comprehensive system
           </p>
         </div>
+
         {/* Admin Settings */}
-        <div className="ml-4">
+        <div className="ml-4 flex space-x-2">
+          {/* Password Status & Change */}
+          <motion.button
+            onClick={() => setShowPasswordModal(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-blue-100 text-blue-700 p-3 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-2"
+            title="Change Admin Password"
+          >
+            <SafeIcon icon={FiShield} className="text-lg" />
+            <div className="text-left">
+              <p className="text-xs font-medium">Admin Password</p>
+              <p className="text-xs">{getCurrentPassword()}</p>
+            </div>
+          </motion.button>
+
+          {/* Education Options */}
           <motion.button
             onClick={() => setShowEducationModal(true)}
             whileHover={{ scale: 1.05 }}
@@ -167,6 +188,7 @@ const Dashboard = () => {
             <SafeIcon icon={FiTrendingUp} className="text-xl text-green-600" />
             <h2 className="text-xl font-semibold text-gray-900">Top Performers</h2>
           </div>
+
           <div className="space-y-4">
             {trainees
               .sort((a, b) => b.points - a.points)
@@ -179,13 +201,9 @@ const Dashboard = () => {
                   <div className="flex items-center space-x-3">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                        index === 0
-                          ? 'bg-yellow-500'
-                          : index === 1
-                          ? 'bg-gray-400'
-                          : index === 2
-                          ? 'bg-orange-500'
-                          : 'bg-blue-500'
+                        index === 0 ? 'bg-yellow-500' :
+                        index === 1 ? 'bg-gray-400' :
+                        index === 2 ? 'bg-orange-500' : 'bg-blue-500'
                       }`}
                     >
                       {index + 1}
@@ -200,6 +218,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
+
             {trainees.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <SafeIcon icon={FiUsers} className="text-4xl mx-auto mb-2 opacity-50" />
@@ -210,10 +229,15 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
-      {/* Education Management Modal */}
+      {/* Modals */}
       <EducationManagementModal
         isOpen={showEducationModal}
         onClose={() => setShowEducationModal(false)}
+      />
+
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
       />
     </div>
   );
